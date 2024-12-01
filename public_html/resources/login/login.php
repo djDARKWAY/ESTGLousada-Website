@@ -9,15 +9,15 @@
 <body>
     <h1>Login</h1>
     <form method="POST" action="">
-        <label for="username">Username:</label>
+        <label for="username">Utilizador:</label>
         <input type="text" id="username" name="username" required>
 
-        <label for="password">Password:</label>
+        <label for="password">Palavra-passe:</label>
         <input type="password" id="password" name="password" required>
 
         <div>
             <input type="checkbox" id="remember" name="remember">
-            <label for="remember">Lembrar-me</label>
+            <label for="remember">Mante sessão iniciada</label>
         </div>
 
         <button type="submit" name="submit">Login</button>

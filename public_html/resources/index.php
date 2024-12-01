@@ -1,3 +1,36 @@
+<?php
+// Incluir o ficheiro de conexão à base de dados
+include('conexao.php');
+$conn = getDatabaseConnection();
+
+// Receber os parâmetros dos filtros
+$tipoFiltro = isset($_GET['tipo']) ? $_GET['tipo'] : '';
+$capacidadeFiltro = isset($_GET['capacidade']) ? $_GET['capacidade'] : '';
+
+// Modificar a query para filtrar conforme os parâmetros
+$sql = "SELECT idSala, nome, tipo, descricao, capacidade, estado, imagemSala FROM sala WHERE 1=1";
+
+// Se o filtro de tipo não for vazio e for diferente de "Todos os tipos", adicionar o filtro de tipo
+if ($tipoFiltro && $tipoFiltro !== '') {
+    $sql .= " AND tipo = '$tipoFiltro'";
+}
+
+// Se o filtro de capacidade for definido, adicionar o filtro de capacidade
+if ($capacidadeFiltro) {
+    $sql .= " AND capacidade >= $capacidadeFiltro";
+}
+
+$result = $conn->query($sql);
+
+// Array para armazenar as salas
+$salas = [];
+if ($result->num_rows > 0) {
+    while ($row = $result->fetch_assoc()) {
+        $salas[] = $row;
+    }
+}
+?>
+
 <!DOCTYPE html>
 <html lang="pt-PT">
 <head>
@@ -10,11 +43,11 @@
     <nav class="navbar">
         <div class="navbar-content">
             <div class="logo">
-                <img src="/api/placeholder/32/32" alt="ESTG Logo">
+                <img class="PPorto" src="media/logoPPorto.png">
                 Gestão de Salas ESTG
             </div>
             <div class="nav-links">
-                <a href="./Login/login.php">Login</a>
+                <a href="./login/login.php">Login</a>
                 <a href="./registar/registar.php">Registar</a>
             </div>
         </div>
@@ -25,97 +58,102 @@
             <div class="filters-grid">
                 <div class="filter-group">
                     <label for="tipo">Tipo de Sala</label>
-                    <select id="tipo">
+                    <select id="tipo" onchange="applyFilters()">
                         <option value="">Todos os tipos</option>
-                        <option value="Arte">Arte</option>
-                        <option value="Auditório">Auditório</option>
-                        <option value="Biblioteca">Biblioteca</option>
-                        <option value="Informática">Informática</option>
-                        <option value="Laboratório">Laboratório</option>
-                        <option value="Mecânica">Mecânica</option>
-                        <option value="Multimédia">Multimédia</option>
-                        <option value="Música">Música</option>
-                        <option value="Pavilhão">Pavilhão</option>
-                        <option value="Reunião">Reunião</option>
-                        <option value="Teórica">Teórica</option>
+                        <option value="Arte" <?php echo $tipoFiltro == 'Arte' ? 'selected' : ''; ?>>Arte</option>
+                        <option value="Auditório" <?php echo $tipoFiltro == 'Auditório' ? 'selected' : ''; ?>>Auditório</option>
+                        <option value="Biblioteca" <?php echo $tipoFiltro == 'Biblioteca' ? 'selected' : ''; ?>>Biblioteca</option>
+                        <option value="Informática" <?php echo $tipoFiltro == 'Informática' ? 'selected' : ''; ?>>Informática</option>
+                        <option value="Laboratório" <?php echo $tipoFiltro == 'Laboratório' ? 'selected' : ''; ?>>Laboratório</option>
+                        <option value="Mecânica" <?php echo $tipoFiltro == 'Mecânica' ? 'selected' : ''; ?>>Mecânica</option>
+                        <option value="Multimédia" <?php echo $tipoFiltro == 'Multimédia' ? 'selected' : ''; ?>>Multimédia</option>
+                        <option value="Música" <?php echo $tipoFiltro == 'Música' ? 'selected' : ''; ?>>Música</option>
+                        <option value="Pavilhão" <?php echo $tipoFiltro == 'Pavilhão' ? 'selected' : ''; ?>>Pavilhão</option>
+                        <option value="Reunião" <?php echo $tipoFiltro == 'Reunião' ? 'selected' : ''; ?>>Reunião</option>
+                        <option value="Teórica" <?php echo $tipoFiltro == 'Teórica' ? 'selected' : ''; ?>>Teórica</option>
                     </select>
                 </div>
                 <div class="filter-group">
                     <label for="capacidade">Capacidade Mínima</label>
-                    <input type="number" id="capacidade" min="1">
+                    <input type="number" id="capacidade" min="1" onchange="applyFilters()" value="<?php echo $capacidadeFiltro; ?>">
                 </div>
                 <div class="filter-group">
                     <label for="data">Data</label>
-                    <input type="date" id="data">
+                    <input type="date" id="data" onchange="applyFilters()">
                 </div>
                 <div class="filter-group">
                     <label>&nbsp;</label>
-                    <button class="btn">Filtrar Salas</button>
+                    <button class="btn" onclick="">Limpar filtros</button>
                 </div>
             </div>
         </div>
 
-        <div class="grid">
+        <div class="grid" id="salas-grid">
+            <?php foreach ($salas as $sala): ?>
             <div class="card">
-                <img src="/api/placeholder/400/200" alt="Sala 101" class="card-image">
+                <img src="/api/placeholder/400/200" alt="<?php echo $sala['nome']; ?>" class="card-image">
                 <div class="card-content">
-                    <span class="room-type">Informática</span>
-                    <h3>Sala 101</h3>
+                    <span class="room-type"><?php echo $sala['tipo']; ?></span>
+                    <h3><?php echo $sala['nome']; ?></h3>
                     <div class="room-details">
                         <div class="room-info">
                             <span>Capacidade:</span>
-                            <span>30 pessoas</span>
+                            <span><?php echo $sala['capacidade']; ?> pessoas</span>
                         </div>
                         <div class="room-info">
                             <span>Descrição:</span>
-                            <span>Laboratório equipado para experiências químicas e biológicas</span>
+                            <span><?php echo $sala['descricao']; ?></span>
                         </div>
                     </div>
-                    <span class="status status-disponivel">Disponível</span>
+                    <?php
+                    // Determinar o estado da sala
+                    $statusClass = '';
+                    $statusText = '';
+                    switch ($sala['estado']) {
+                        case 'disponível':
+                            $statusClass = 'status-disponivel';
+                            $statusText = 'Disponível';
+                            break;
+                        case 'indisponível':
+                            $statusClass = 'status-indisponivel';
+                            $statusText = 'Indisponível';
+                            break;
+                        case 'brevemente':
+                            $statusClass = 'status-brevemente';
+                            $statusText = 'Em Breve';
+                            break;
+                    }
+                    ?>
+                    <span class="status <?php echo $statusClass; ?>"><?php echo $statusText; ?></span>
                     <button class="btn reservar-btn">Reservar</button>
                 </div>
             </div>
-
-            <div class="card">
-                <img src="/api/placeholder/400/200" alt="Sala 102" class="card-image">
-                <div class="card-content">
-                    <span class="room-type">Laboratório</span>
-                    <h3>Sala 102</h3>
-                    <div class="room-details">
-                        <div class="room-info">
-                            <span>Capacidade:</span>
-                            <span>25 pessoas</span>
-                        </div>
-                        <div class="room-info">
-                            <span>Descrição:</span>
-                            <span>Laboratório equipado para experiências químicas e biológicas</span>
-                        </div>
-                    </div>
-                    <span class="status status-indisponivel">Indisponível</span>
-                    <button class="btn reservar-btn">Reservar</button>
-                </div>
-            </div>
-
-            <div class="card">
-                <img src="/api/placeholder/400/200" alt="Sala 103" class="card-image">
-                <div class="card-content">
-                    <span class="room-type">Auditório</span>
-                    <h3>Sala 103</h3>
-                    <div class="room-details">
-                        <div class="room-info">
-                            <span>Capacidade:</span>
-                            <span>40 pessoas</span>
-                        </div>
-                        <div class="room-info">
-                            <span>Descrição:</span>
-                            <span>Laboratório equipado para experiências químicas e biológicas</span>
-                        </div>
-                    </div>
-                    <span class="status status-brevemente">Em Breve</span>
-                    <button class="btn reservar-btn">Reservar</button>
-                </div>
-            </div>
+            <?php endforeach; ?>
         </div>
     </main>
+
+    <script>
+        // Função para aplicar os filtros
+        function applyFilters() {
+            const tipo = document.getElementById('tipo').value;
+            const capacidade = document.getElementById('capacidade').value;
+
+            let url = window.location.pathname + "?";
+
+            if (tipo) url += `tipo=${tipo}&`;
+            if (capacidade) url += `capacidade=${capacidade}&`;
+
+            // Remover o último '&' caso haja
+            url = url.endsWith('&') ? url.slice(0, -1) : url;
+
+            // Atualiza a página com os filtros aplicados
+            window.location.href = url;
+        }
+    </script>
 </body>
 </html>
+
+<?php
+// Fechar a conexão com a base de dados
+$conn->close();
+?>

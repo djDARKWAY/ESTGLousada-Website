@@ -39,12 +39,17 @@ body {
 }
 
 .logo {
-    font-size: 1.5rem;
+    font-size: 1rem;
     font-weight: 700;
     color: white;
     display: flex;
     align-items: center;
     gap: 0.5rem;
+}
+
+.PPorto {
+    width: 40px;
+    height: auto;
 }
 
 .nav-links {
@@ -73,6 +78,9 @@ body {
 }
 
 .filters {
+    position: sticky;
+    top: 64px;
+    z-index: 99;
     background-color: var(--card-background);
     padding: 1.5rem;
     border-radius: 0.5rem;

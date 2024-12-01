@@ -5,63 +5,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 2em auto;
-            max-width: 500px;
-            padding: 1em;
-            background-color: #f9f9f9;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-
-        h1 {
-            text-align: center;
-            color: #333;
-        }
-
-        form {
-            display: flex;
-            flex-direction: column;
-            gap: 1em;
-        }
-
-        label {
-            font-weight: bold;
-        }
-
-        input,
-        select,
-        button {
-            padding: 0.5em;
-            font-size: 1em;
-        }
-
-        button {
-            background-color: #ff4081;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background-color: #e0336f;
-        }
-    </style>
-
+    <link rel="stylesheet" href="registar.css">
 </head>
 
 <body>
     <h1>Register</h1>
     <form method="POST" action="" onsubmit="return validatePassword();">
 
-        <label for="username">Username:</label>
+        <label for="username">Utilizador:</label>
         <input type="text" id="username" name="username" required value="<?php echo isset($_POST['username']) ? htmlspecialchars($_POST['username']) : ''; ?>">
 
-        <label for="password">Password:</label>
+        <label for="password">Palavra-passe:</label>
         <input type="password" id="password" name="password" required>
 
-        <label for="nome">Nome:</label>
+        <label for="nome">Nome completo:</label>
         <input type="text" id="nome" name="nome" required value="<?php echo isset($_POST['nome']) ? htmlspecialchars($_POST['nome']) : ''; ?>">
 
         <label for="email">Email:</label>
@@ -70,10 +27,10 @@
         <label for="contacto">Contacto:</label>
         <input type="text" id="contacto" name="contacto" required value="<?php echo isset($_POST['contacto']) ? htmlspecialchars($_POST['contacto']) : ''; ?>">
 
-        <label for="imagemPerfil">Imagem de Perfil:</label>
+        <label for="imagemPerfil">Imagem de perfil:</label>
         <input type="file" id="imagemPerfil" name="imagemPerfil">
 
-        <button type="submit" name="submit">Register</button>
+        <button type="submit" name="submit">Registar</button>
     </form>
 
     <?php
@@ -92,21 +49,22 @@
         $imagemPerfil = NULL;
 
         // Geração de "sal" e encriptação da senha
-        $salt = bin2hex(random_bytes(10)); // Gera um sal único de 8 bytes
+        $salt = bin2hex(random_bytes(10));
         $hashedPassword = password_hash($salt . $password, PASSWORD_BCRYPT);
 
         // Verificar se o número ou login já existe
-        $check_sql = "SELECT * FROM utilizador WHERE username = ?";
-        $stmt_check = $conn->prepare($check_sql);
-        $stmt_check->bind_param("s", $username);
-        $stmt_check->execute();
-        $result = $stmt_check->get_result();
+        $checkSql = "SELECT * FROM utilizador WHERE username = ?";
+        $stmtCheck = $conn->prepare($checkSql);
+        $stmtCheck->bind_param("s", $username);
+        $stmtCheck->execute();
+        $result = $stmtCheck->get_result();
 
-        $check_sql = "SELECT * FROM utilizador WHERE email = ?";
-        $stmt_check = $conn->prepare($check_sql);
-        $stmt_check->bind_param("s", $email);
-        $stmt_check->execute();
-        $result1 = $stmt_check->get_result();
+        // Verificar se o email já existe
+        $checkSql = "SELECT * FROM utilizador WHERE email = ?";
+        $stmtCheck = $conn->prepare($checkSql);
+        $stmtCheck->bind_param("s", $email);
+        $stmtCheck->execute();
+        $result1 = $stmtCheck->get_result();
 
         $verificacaoPassword = "/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/";
 
@@ -136,10 +94,10 @@
             $stmt->close();
         }
 
-        $stmt_check->close();
+        $stmtCheck->close();
         $conn->close();
     }
     ?>
 </body>
 
-</html</script>>
+</html>

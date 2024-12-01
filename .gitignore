@@ -1,2 +1,4 @@
 
 public_html/resources/conexao.php
+logs/saw-access.log
+logs/saw-error.log

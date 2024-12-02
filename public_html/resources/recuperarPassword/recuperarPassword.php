@@ -36,10 +36,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             // Configurações do servidor SMTP
             $mail->isSMTP();
-            $mail->Host = 'smtp.gmail.com'; // Servidor SMTP para Hotmail/Outlook
+            $mail->Host = 'smtp.gmail.com';
             $mail->SMTPAuth = true;
-            $mail->Username = 'projetorocular@gmail.com'; // Insira seu email Hotmail
-            $mail->Password = 'hnsj hewy rlsy mujh'; //  password original do email JRbricolage! app pass: smnr akqt gsot jjid
+            $mail->Username = 'projetorocular@gmail.com';
+            $mail->Password = 'hnsj hewy rlsy mujh';
             $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
             $mail->Port = 587;
 
@@ -73,49 +73,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Recuperar Password</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 2em auto;
-            max-width: 500px;
-            padding: 1em;
-            background-color: #f9f9f9;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-        h1 {
-            text-align: center;
-            color: #333;
-        }
-        form {
-            display: flex;
-            flex-direction: column;
-            gap: 1em;
-        }
-        input, button {
-            padding: 0.5em;
-            font-size: 1em;
-        }
-        button {
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-    </style>
+    <link rel="stylesheet" href="recuperarPassword.css">
 </head>
+
 <body>
-    <h1>Recuperar Password</h1>
-    <form method="POST" action="">
-        <label for="email">Email:</label>
-        <input type="email" id="email" name="email" required>
-        <button type="submit">Enviar</button>
-    </form>
+    <div class="container">
+        <div class="login-box">
+            <h1>Recuperar password</h1>
+            <form method="POST" action="">
+                <label for="email">Insira seu email de recuperação de conta:</label>
+                <input type="email" id="email" name="email" required>
+                <button type="submit">Enviar</button>
+            </form>
+        </div>
+    </div>
 </body>
+
 </html>

@@ -1,30 +1,36 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
     <link rel="stylesheet" href="login.css">
 </head>
+
 <body>
-    <h1>Login</h1>
-    <form method="POST" action="">
-        <label for="username">Utilizador:</label>
-        <input type="text" id="username" name="username" required>
+    <div class="container">
+        <div class="login-box">
+            <h1>P.Porto</h1>
+            <form method="POST" action="">
+                <label for="username">Utilizador:</label>
+                <input type="text" id="username" name="username" required>
 
-        <label for="password">Palavra-passe:</label>
-        <input type="password" id="password" name="password" required>
+                <label for="password">Palavra-passe:</label>
+                <input type="password" id="password" name="password" required>
 
-        <div>
-            <input type="checkbox" id="remember" name="remember">
-            <label for="remember">Mante sessão iniciada</label>
+                <div class="checkbox-container">
+                    <input type="checkbox" id="remember" name="remember">
+                    <label for="remember">Manter sessão iniciada</label>
+                </div>
+
+                <button type="submit" name="submit">Login</button>
+            </form>
+            <p>
+                <a href="../recuperarPassword/recuperarPassword.php">Esqueceu-se da password?</a>
+            </p>
         </div>
-
-        <button type="submit" name="submit">Login</button>
-    </form>
-    <p style="text-align:center;">
-        <a href="../recuperarPassword/recuperarPassword.php">Esqueceu-se da password?</a>
-    </p>
+    </div>
 
     <?php
     require_once '../conexao.php';
@@ -51,10 +57,9 @@
                 session_start();
                 $_SESSION['utilizador'] = $utilizador['idUtilizador'];
 
-                // "Remember Me" funcionalidade
                 if (isset($_POST['remember'])) {
                     $token = bin2hex(random_bytes(16));
-                    setcookie('remember_me', $token, time() + (1 * 24 * 60 * 60), "/"); // Cookie válido por 1 dias
+                    setcookie('remember_me', $token, time() + (1 * 24 * 60 * 60), "/");
 
                     $update_token = "UPDATE utilizador SET rememberToken = ? WHERE idUtilizador = ?";
                     $stmt_update = $conn->prepare($update_token);
@@ -72,4 +77,5 @@
     }
     ?>
 </body>
+
 </html>

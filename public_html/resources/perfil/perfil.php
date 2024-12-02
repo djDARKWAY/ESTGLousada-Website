@@ -70,10 +70,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         if ($stmt->execute()) {
-            $mensagem = "Informações atualizadas com sucesso.";
+            $mensagem = "Informações atualizadas com sucesso!";
         } else {
-            $erro = "Erro ao atualizar informações.";
+            $erro = "Erro ao atualizar informações!";
         }
+
+        header('Location: ' . $_SERVER['PHP_SELF']);
+        exit();
     }
 }
 ?>
@@ -92,10 +95,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="container">
         <div class="perfil-box">
             <?php if (isset($mensagem)): ?>
-                <p style="color:green;"><?php echo $mensagem; ?></p>
+                <p style="color:lightgreen; font-weight:bold;"><?php echo $mensagem; ?></p>
             <?php endif; ?>
             <?php if (isset($erro)): ?>
-                <p style="color:red;"><?php echo $erro; ?></p>
+                <p style="color:red; font-weight:bold;"><?php echo $erro; ?></p>
             <?php endif; ?>
 
             <form method="POST" action="" enctype="multipart/form-data">

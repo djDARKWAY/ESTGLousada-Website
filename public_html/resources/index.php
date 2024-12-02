@@ -72,18 +72,30 @@ function getSalaImage($tipo)
 </head>
 
 <body>
-    <nav class="navbar">
-        <div class="navbar-content">
-            <div class="logo">
-                <img class="PPorto" src="media/logoPPorto.png">
-                Gestão de Salas ESTG
-            </div>
-            <div class="nav-links">
+<nav class="navbar">
+    <div class="navbar-content">
+        <!-- Logo Section -->
+        <div class="logo">
+            <img class="PPorto" src="media/logoPPorto.png" alt="Logo PPorto">
+            Gestão de Salas ESTG
+        </div>
+
+        <!-- Navigation Links -->
+        <div class="nav-links">
+            <?php
+            session_start(); // Ensure the session is started
+            if (isset($_SESSION['utilizador'])): ?>
+                <!-- Links for logged-in users -->
+                <a href="./perfil/perfil.php">Perfil</a>
+                <a href="logout.php">Logout</a>
+            <?php else: ?>
+                <!-- Links for guests -->
                 <a href="./login/login.php">Login</a>
                 <a href="./registar/registar.php">Registar</a>
-            </div>
+            <?php endif; ?>
         </div>
-    </nav>
+    </div>
+</nav>
 
     <main class="container">
         <div class="filters">
@@ -128,6 +140,7 @@ function getSalaImage($tipo)
             </div>
         </div>
 
+
         <div class="grid">
             <?php foreach ($salas as $sala): ?>
                 <div class="card">
@@ -141,6 +154,7 @@ function getSalaImage($tipo)
                                 <span>Tipo: <?php echo $sala['tipo']; ?></span>
                             </div>
                             <div class="status">
+                                (disponibilidade)
                             </div>
                         </div>
                         <button class="btn reservar-btn">Reservar</button>

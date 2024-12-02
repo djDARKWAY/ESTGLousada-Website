@@ -87,7 +87,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <button type="submit">Guardar Alterações</button>
 </form>
-<a href="index.php">Voltar</a>
+<a href="../index.php">Voltar</a>
 </body>
 
 </html>

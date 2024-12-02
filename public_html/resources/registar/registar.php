@@ -20,6 +20,9 @@
                 <label for="password">Palavra-passe:</label>
                 <input type="password" id="password" name="password" required>
 
+                <label for="confirm_password">Confirmar Palavra-passe:</label>
+                <input type="password" id="confirm_password" name="confirm_password" required>
+
                 <label for="nome">Nome completo:</label>
                 <input type="text" id="nome" name="nome" required
                     value="<?php echo isset($_POST['nome']) ? htmlspecialchars($_POST['nome']) : ''; ?>">
@@ -70,12 +73,23 @@
                 $verificacaoPassword = "/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/";
 
                 // Validações
+                $username = trim(filter_var($username, FILTER_SANITIZE_STRING));
+                $nome = trim(filter_var($nome, FILTER_SANITIZE_STRING));
+                $email = trim(filter_var($email, FILTER_SANITIZE_EMAIL));
+                $contacto = trim(filter_var($contacto, FILTER_SANITIZE_STRING));
+
                 if ($result->num_rows > 0) {
                     echo "<p>Username já está em uso!</p>";
                 } else if ($result1->num_rows > 0) {
                     echo "<p>Email já está em uso!</p>";
+                } else if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                    echo "<p>Formato de email inválido!</p>";
                 } else if (!preg_match($verificacaoPassword, $password)) {
-                    echo "<p>Password deve conter pelo menos 8 caracteres...</p>";
+                    echo "<p>Password deve conter pelo menos 8 caracteres, uma letra maiúscula, uma letra minúscula, um número e um caractere especial.</p>";
+                } else if ($password !== $_POST['confirm_password']) {
+                    echo "<p>As passwords não coincidem!</p>";
+                } else if (!preg_match('/^(255|91|92|93|96)[0-9]{7}$/', $contacto)) {
+                    echo "<p>O número tem de começar por 255, 91, 92, 93 ou 96 e ter 9 dígitos.</p>";
                 } else {
                     // Processamento da imagem
                     $imagemPerfil = null;

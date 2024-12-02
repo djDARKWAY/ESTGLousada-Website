@@ -31,21 +31,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmtCheck->execute();
     $checkResult = $stmtCheck->get_result();
 
+    $verificacaoPassword = "/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/";
+
+    // Validações
+    $nome = trim(filter_var($nome, FILTER_SANITIZE_STRING));
+    $email = trim(filter_var($email, FILTER_SANITIZE_EMAIL));
+    $contacto = trim(filter_var($contacto, FILTER_SANITIZE_STRING));
+
     if ($checkResult->num_rows > 0) {
         $erro = "Este email já está em uso.";
+    } else if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        echo "<p>Formato de email inválido!</p>";
+    } else if ($novaPassword && !preg_match($verificacaoPassword, $novaPassword)) {
+        echo "<p>Password deve conter pelo menos 8 caracteres, uma letra maiúscula, uma letra minúscula, um número e um caractere especial.</p>";
+    } else if (!preg_match('/^(255|91|92|93|96)[0-9]{7}$/', $contacto)) {
+        echo "<p>O número tem de começar por 255, 91, 92, 93 ou 96 e ter 9 dígitos.</p>";
     } else {
-        // Atualizar os dados do utilizador
-        $updateSql = "UPDATE utilizador SET nome = ?, email = ?, contacto = ? WHERE idUtilizador = ?";
+        $imagemPerfil = null;
+        if (isset($_FILES['imagemPerfil']) && $_FILES['imagemPerfil']['error'] == 0) {
+            $imagemTipo = $_FILES['imagemPerfil']['type'];
+            if ($imagemTipo == 'image/png' || $imagemTipo == 'image/jpeg') {
+                $imagemPerfil = file_get_contents($_FILES['imagemPerfil']['tmp_name']);
+            } else {
+                echo "<p>Por favor, carregue uma imagem PNG ou JPEG.</p>";
+            }
+        }
+
         if ($novaPassword) {
             $salt = bin2hex(random_bytes(10));
             $hashedPassword = password_hash($salt . $novaPassword, PASSWORD_BCRYPT);
-            $updateSql = "UPDATE utilizador SET nome = ?, email = ?, contacto = ?, password = ?, salt = ? WHERE idUtilizador = ?";
+            $updateSql = "UPDATE utilizador SET nome = ?, email = ?, contacto = ?, imagemPerfil = ?, password = ?, salt = ? WHERE idUtilizador = ?";
             $stmt = $conn->prepare($updateSql);
-            $stmt->bind_param("sssssi", $nome, $email, $contacto, $hashedPassword, $salt, $idUtilizador);
+            $stmt->bind_param("ssssssi", $nome, $email, $contacto, $imagemPerfil, $hashedPassword, $salt, $idUtilizador);
         } else {
+            $updateSql = "UPDATE utilizador SET nome = ?, email = ?, contacto = ?, imagemPerfil = ? WHERE idUtilizador = ?";
             $stmt = $conn->prepare($updateSql);
-            $stmt->bind_param("sssi", $nome, $email, $contacto, $idUtilizador);
+            $stmt->bind_param("ssssi", $nome, $email, $contacto, $imagemPerfil, $idUtilizador);
         }
+
         if ($stmt->execute()) {
             $mensagem = "Informações atualizadas com sucesso.";
         } else {
@@ -61,35 +84,53 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editar Perfil</title>
+    <title>Perfil</title>
     <link rel="stylesheet" href="perfil.css">
 </head>
 
-
 <body>
-<h1>Editar Perfil</h1>
-<?php if (isset($mensagem)): ?>
-    <p style="color:green;"><?php echo $mensagem; ?></p>
-<?php endif; ?>
-<?php if (isset($erro)): ?>
-    <p style="color:red;"><?php echo $erro; ?></p>
-<?php endif; ?>
-<form method="POST" action="">
-    <label for="nome">Nome:</label>
-    <input type="text" id="nome" name="nome" value="<?php echo htmlspecialchars($utilizador['nome']); ?>" required>
+    <div class="container">
+        <div class="perfil-box">
+            <?php if (isset($mensagem)): ?>
+                <p style="color:green;"><?php echo $mensagem; ?></p>
+            <?php endif; ?>
+            <?php if (isset($erro)): ?>
+                <p style="color:red;"><?php echo $erro; ?></p>
+            <?php endif; ?>
 
-    <label for="email">Email:</label>
-    <input type="email" id="email" name="email" value="<?php echo htmlspecialchars($utilizador['email']); ?>" required>
+            <form method="POST" action="" enctype="multipart/form-data">
+                <h1><?php echo htmlspecialchars($utilizador['username']); ?></h1>
+                <div class="imagemPerfil">
+                    <?php
+                    if ($utilizador['imagemPerfil']) {
+                        echo '<img src="data:image/jpeg;base64,' . base64_encode($utilizador['imagemPerfil']) . '" alt="Foto de Perfil" style="width: 270px; height: 270px; border-radius: 50%; object-fit: cover;">';
+                    } else {
+                        echo 'Sem imagem de perfil.';
+                    }
+                    ?>
+                </div>
+                <input type="file" id="imagemPerfil" name="imagemPerfil" accept="image/png, image/jpeg">
+                <label for="nome">Nome:</label>
+                <input type="text" id="nome" name="nome" value="<?php echo htmlspecialchars($utilizador['nome']); ?>"
+                    required>
 
-    <label for="contacto">Contacto:</label>
-    <input type="text" id="contacto" name="contacto" value="<?php echo htmlspecialchars($utilizador['contacto']); ?>" required>
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email"
+                    value="<?php echo htmlspecialchars($utilizador['email']); ?>" required>
 
-    <label for="novaPassword">Nova Palavra-passe (opcional):</label>
-    <input type="password" id="novaPassword" name="novaPassword">
+                <label for="contacto">Contacto:</label>
+                <input type="text" id="contacto" name="contacto"
+                    value="<?php echo htmlspecialchars($utilizador['contacto']); ?>" required>
 
-    <button type="submit">Guardar Alterações</button>
-</form>
-<a href="../index.php">Voltar</a>
+                <label for="novaPassword">Nova palavra-passe (opcional):</label>
+                <input type="password" id="novaPassword" name="novaPassword">
+
+                <button type="submit">Guardar alterações</button>
+
+                <a class="voltar" href="../index.php">◄ Voltar</a>
+            </form>
+        </div>
+    </div>
 </body>
 
 </html>

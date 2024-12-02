@@ -82,12 +82,3 @@ button:hover {
     background-color: var(--primary-light);
     transform: scale(1.05);
 }
-
-a {
-    color: var(--primary-color);
-    text-decoration: none;
-}
-
-a:hover {
-    text-decoration: underline;
-}

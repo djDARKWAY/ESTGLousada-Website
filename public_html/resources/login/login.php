@@ -68,7 +68,6 @@
                     $stmt_update->bind_param("si", $token, $utilizador['idUtilizador']);
                     $stmt_update->execute();
                 }
-
                 echo "<script>window.location.href = '../index.php';</script>";
             } else {
                 echo "<p style='color:red;text-align:center;'>Erro: Password incorreta.</p>";

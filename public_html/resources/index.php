@@ -128,40 +128,22 @@ function getSalaImage($tipo)
             </div>
         </div>
 
-        <div class="grid" id="salas-grid">
+        <div class="grid">
             <?php foreach ($salas as $sala): ?>
                 <div class="card">
-                    <img src="<?php echo getSalaImage($sala['tipo']); ?>" alt="<?php echo $sala['nome']; ?>"
-                        class="card-image">
+                    <img src="<?php echo getSalaImage($sala['tipo']); ?>" alt="Imagem da sala" class="card-image">
                     <div class="card-content">
-                        <span class="room-type"><?php echo $sala['tipo']; ?></span>
                         <h3><?php echo $sala['nome']; ?></h3>
+                        <p><?php echo $sala['descricao']; ?></p>
                         <div class="room-details">
                             <div class="room-info">
-                                <span>Capacidade:</span>
-                                <span><?php echo $sala['capacidade']; ?> pessoas</span>
+                                <span>Capacidade: <?php echo $sala['capacidade']; ?></span>
+                                <span>Tipo: <?php echo $sala['tipo']; ?></span>
+                            </div>
+                            <div class="status">
                             </div>
                         </div>
-                        <?php
-                        $statusClass = '';
-                        $statusText = '';
-                        switch ($sala['estado']) {
-                            case 'disponível':
-                                $statusClass = 'status-disponivel';
-                                $statusText = 'Disponível';
-                                break;
-                            case 'indisponível':
-                                $statusClass = 'status-indisponivel';
-                                $statusText = 'Indisponível';
-                                break;
-                            case 'brevemente':
-                                $statusClass = 'status-brevemente';
-                                $statusText = 'Em Breve';
-                                break;
-                        }
-                        ?>
-                        <span class="status <?php echo $statusClass; ?>"><?php echo $statusText; ?></span>
-                        <button class="btn reservar-btn">Reservar sala</button>
+                        <button class="btn reservar-btn">Reservar</button>
                     </div>
                 </div>
             <?php endforeach; ?>

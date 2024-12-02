@@ -171,43 +171,6 @@ body {
     font-size: 0.875rem;
     font-weight: 500;
 }
-
-.status::before {
-    content: '';
-    display: inline-block;
-    width: 0.5rem;
-    height: 0.5rem;
-    border-radius: 50%;
-    margin-right: 0.5rem;
-}
-
-.status-disponivel {
-    background-color: #dcfce7;
-    color: #166534;
-}
-
-.status-disponivel::before {
-    background-color: #16a34a;
-}
-
-.status-indisponivel {
-    background-color: #fee2e2;
-    color: #991b1b;
-}
-
-.status-indisponivel::before {
-    background-color: #dc2626;
-}
-
-.status-brevemente {
-    background-color: #fef3c7;
-    color: #92400e;
-}
-
-.status-brevemente::before {
-    background-color: #d97706;
-}
-
 .btn {
     display: inline-flex;
     align-items: center;

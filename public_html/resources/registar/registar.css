@@ -59,11 +59,7 @@ label {
     text-align: left;
 }
 
-input[type="text"],
-input[type="password"],
-input[type="email"],
-input[type="file"],
-button {
+input, button {
     padding: 10px;
     margin-top: 5px;
     font-size: 14px;
@@ -81,8 +77,4 @@ button {
 
 button:hover {
     background-color: #a33c1a;
-}
-
-p {
-    color: red;
 }

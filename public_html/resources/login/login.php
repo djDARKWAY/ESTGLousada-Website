@@ -11,7 +11,7 @@
 <body>
     <div class="container">
         <div class="login-box">
-            <h1>P.Porto</h1>
+            <h1>Login</h1>
             <form method="POST" action="">
                 <label for="username">Utilizador:</label>
                 <input type="text" id="username" name="username" required>

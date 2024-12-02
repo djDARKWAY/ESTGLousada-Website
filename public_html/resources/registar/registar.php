@@ -41,6 +41,7 @@
             <?php
             require_once '../conexao.php';
             $conn = getDatabaseConnection();
+
             if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
                 $username = $_POST['username'];
                 $password = $_POST['password'];
@@ -48,21 +49,28 @@
                 $email = $_POST['email'];
                 $contacto = $_POST['contacto'];
                 $cargo = "Professor";
-                $imagemPerfil = NULL;
+                if (isset($_POST['imagemPerfil']) && $_POST['imagemPerfil']['error'] === UPLOAD_ERR_OK) {
+                    $imageData = file_get_contents($_POST['imagemPerfil']['tmp_name']);
+                    $imagemPerfil = base64_encode($imageData);
+                } else {
+                    $imagemPerfil = null;
+                }
 
                 $salt = bin2hex(random_bytes(10));
                 $hashedPassword = password_hash($salt . $password, PASSWORD_BCRYPT);
-
+                
+                // Verifica se o username  já está em uso
                 $checkSql = "SELECT * FROM utilizador WHERE username = ?";
                 $stmtCheck = $conn->prepare($checkSql);
                 $stmtCheck->bind_param("s", $username);
                 $stmtCheck->execute();
                 $result = $stmtCheck->get_result();
-
+                // Verifica se o email já está em uso
                 $checkSql = "SELECT * FROM utilizador WHERE email = ?";
                 $stmtCheck = $conn->prepare($checkSql);
                 $stmtCheck->bind_param("s", $email);
                 $stmtCheck->execute();
+                $lastId = $conn->insert_id;
                 $result1 = $stmtCheck->get_result();
 
                 $verificacaoPassword = "/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/";
@@ -74,14 +82,16 @@
                 } else if (!preg_match($verificacaoPassword, $password)) {
                     echo "<p>Password deve conter pelo menos 8 caracteres...</p>";
                 } else {
+                    // Insere os dados na base de dados
                     $sql = "INSERT INTO utilizador (username, password, nome, email, contacto, cargo, imagemPerfil, salt) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
                     $stmt = $conn->prepare($sql);
                     $stmt->bind_param("ssssssss", $username, $hashedPassword, $nome, $email, $contacto, $cargo, $imagemPerfil, $salt);
+
                     if ($stmt->execute()) {
                         echo "<script>
-                                alert('Registo efetuado com sucesso!');
-                                window.location.href = '../index.php';
-                              </script>";
+                    alert('Registo efetuado com sucesso!');
+                    window.location.href = '../index.php';
+                  </script>";
                     } else {
                         echo "<p>Erro: " . $stmt->error . "</p>";
                     }

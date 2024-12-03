@@ -1,7 +1,15 @@
 <?php
+session_start();
+
 // Incluir o ficheiro de conexão à base de dados
 include('conexao.php');
 $conn = getDatabaseConnection();
+
+// Verificar se o utilizador está logado
+if (!isset($_SESSION['utilizador'])) {
+    header("Location: login.php");
+    exit();
+}
 
 // Receber os parâmetros dos filtros
 $tipoFiltro = isset($_GET['tipo']) ? $_GET['tipo'] : '';
@@ -25,11 +33,11 @@ $stmt = $conn->prepare($sql);
 
 // Verificar se os parâmetros existem e associá-los corretamente
 if ($tipoFiltro && $tipoFiltro !== '' && $capacidadeFiltro) {
-    $stmt->bind_param("si", $tipoFiltro, $capacidadeFiltro); // 's' para string (tipo) e 'i' para inteiro (capacidade)
+    $stmt->bind_param("si", $tipoFiltro, $capacidadeFiltro);
 } elseif ($tipoFiltro && $tipoFiltro !== '') {
-    $stmt->bind_param("s", $tipoFiltro); // 's' para string
+    $stmt->bind_param("s", $tipoFiltro);
 } elseif ($capacidadeFiltro) {
-    $stmt->bind_param("i", $capacidadeFiltro); // 'i' para inteiro
+    $stmt->bind_param("i", $capacidadeFiltro);
 }
 
 // Executar a query
@@ -57,7 +65,7 @@ function getSalaImage($tipo)
         'Reunião' => 'media/salaReuniao.jpg',
         'Teórica' => 'media/salaTeorica.jpg'
     ];
-    return isset($imagens[$tipo]) ? $imagens[$tipo] : 'media/salaDefault.jpg';
+    return isset($imagens[$tipo]) ? $imagens[$tipo] : 'media/salaDefault.png';
 }
 ?>
 
@@ -72,30 +80,26 @@ function getSalaImage($tipo)
 </head>
 
 <body>
-<nav class="navbar">
-    <div class="navbar-content">
-        <!-- Logo Section -->
-        <div class="logo">
-            <img class="PPorto" src="media/logoPPorto.png" alt="Logo PPorto">
-            Gestão de Salas ESTG
-        </div>
+    <nav class="navbar">
+        <div class="navbar-content">
+            <div class="logo">
+                <img class="PPorto" src="media/logoPPorto.png">
+                Gestão de Salas ESTG
+            </div>
 
-        <!-- Navigation Links -->
-        <div class="nav-links">
-            <?php
-            session_start(); // Ensure the session is started
-            if (isset($_SESSION['utilizador'])): ?>
-                <!-- Links for logged-in users -->
-                <a href="./perfil/perfil.php">Perfil</a>
+            <div class="nav-links">
+                <?php
+                if ($_SESSION['cargo'] == 'Administrador') {
+                    echo '<a href="admin.php">Administração</a>';
+                    echo '<a href="gestaoUtilizadores.php">Gestão de Utilizadores</a>';
+                } elseif ($_SESSION['cargo'] == 'Professor') {
+                    echo '<a href="reservarSala.php">Reservar Sala</a>';
+                }
+                ?>
                 <a href="logout.php">Logout</a>
-            <?php else: ?>
-                <!-- Links for guests -->
-                <a href="./login/login.php">Login</a>
-                <a href="./registar/registar.php">Registar</a>
-            <?php endif; ?>
+            </div>
         </div>
-    </div>
-</nav>
+    </nav>
 
     <main class="container">
         <div class="filters">
@@ -187,7 +191,6 @@ function getSalaImage($tipo)
 </html>
 
 <?php
-
 // Fechar a conexão com a base de dados
 $stmt->close();
 $conn->close();

@@ -1,15 +1,11 @@
 <?php
+error_reporting(0);
 session_start();
 
 // Incluir o ficheiro de conexão à base de dados
 include('conexao.php');
 $conn = getDatabaseConnection();
 
-// Verificar se o utilizador está logado
-if (!isset($_SESSION['utilizador'])) {
-    header("Location: login/login.php");
-    exit();
-}
 
 // Receber os parâmetros dos filtros
 $tipoFiltro = isset($_GET['tipo']) ? $_GET['tipo'] : '';

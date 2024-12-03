@@ -43,7 +43,6 @@ html {
 }
 
 h1 {
-    margin-bottom: 1em;
     color: var(--primary-color);
 }
 
@@ -71,6 +70,7 @@ input {
 
 button {
     background-color: var(--primary-color);
+    margin-bottom: 10px;
     color: white;
     border: none;
     padding: 0.8em;

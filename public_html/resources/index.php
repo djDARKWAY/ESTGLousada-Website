@@ -94,7 +94,7 @@ function getSalaImage($tipo)
                     // Adicionar rotas
                 } else {
                     echo '<a href="login/login.php">Login</a>';
-                    echo '<a href="login/registar.php">Registar</a>';
+                    echo '<a href="registar/registar.php">Registar</a>';
                 }
                 ?>
             </div>
@@ -151,7 +151,6 @@ function getSalaImage($tipo)
                     <img src="<?php echo getSalaImage($sala['tipo']); ?>" alt="Imagem da sala" class="card-image">
                     <div class="card-content">
                         <h3><?php echo $sala['nome']; ?></h3>
-                        <p><?php echo $sala['descricao']; ?></p>
                         <div class="room-details">
                             <div class="room-info">
                                 <span>Capacidade: <?php echo $sala['capacidade']; ?></span>

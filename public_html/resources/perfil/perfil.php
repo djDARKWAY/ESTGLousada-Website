@@ -106,7 +106,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="imagemPerfil">
                     <?php
                     if ($utilizador['imagemPerfil']) {
-                        echo '<img src="data:image/jpeg;base64,' . base64_encode($utilizador['imagemPerfil']) . '" alt="Foto de Perfil" style="width: 270px; height: 270px; border-radius: 50%; object-fit: cover;">';
+                        echo '<img src="data:image/jpeg;base64,' . base64_encode($utilizador['imagemPerfil']) . '" alt="Foto de Perfil" style="width: 200px; height: 200px; border-radius: 50%; object-fit: cover;">';
                     } else {
                         echo 'Sem imagem de perfil.';
                     }

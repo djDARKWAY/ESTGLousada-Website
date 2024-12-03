@@ -46,6 +46,7 @@ h1 {
     margin-top: -5px;
     text-align: center;
     color: #444;
+    size: 20px;
 }
 
 form {
@@ -66,8 +67,8 @@ label {
 
 input {
     width: 100%;
-    padding: 10px;
-    margin-bottom: 15px;
+    padding: 8px;
+    margin-bottom: 8px;
     border: 1px solid #ccc;
     border-radius: 4px;
     box-sizing: border-box;

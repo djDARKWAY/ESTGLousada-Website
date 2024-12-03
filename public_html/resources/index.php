@@ -97,7 +97,7 @@ function getSalaImage($tipo)
             <div class="nav-links">
                 <?php
                 if ($_SESSION['cargo'] == 'Administrador') {
-                    echo '<a href="admin/admin.php">Área de administração</a>';
+                    echo '<a href="areaAdmin/areaAdmin.php">Área de administração</a>';
                     echo '<a href="perfil/perfil.php">Perfil</a>';
                     echo '<a href="logout.php">Logout</a>';
                     // Adicionar rotas

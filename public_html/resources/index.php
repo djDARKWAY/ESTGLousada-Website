@@ -46,6 +46,17 @@ if ($result->num_rows > 0) {
     }
 }
 
+// Obter os tipos distintos de sala
+$sqlTipos = "SELECT DISTINCT tipo FROM sala";
+$resultTipos = $conn->query($sqlTipos);
+$tipos = [];
+
+if ($resultTipos->num_rows > 0) {
+    while ($row = $resultTipos->fetch_assoc()) {
+        $tipos[] = $row['tipo'];
+    }
+}
+
 function getSalaImage($tipo)
 {
     $imagens = [
@@ -71,7 +82,7 @@ function getSalaImage($tipo)
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Gestão de Salas - ESTG</title>
+    <title>Gestão de salas - ESTG</title>
     <link rel="stylesheet" href="index.css">
 </head>
 
@@ -80,12 +91,14 @@ function getSalaImage($tipo)
         <div class="navbar-content">
             <div class="logo">
                 <img class="PPorto" src="media/logoPPorto.png">
-                Gestão de Salas ESTG
+                Gestão de salas ESTG
             </div>
 
             <div class="nav-links">
                 <?php
                 if ($_SESSION['cargo'] == 'Administrador') {
+                    echo '<a href="admin/admin.php">Área de administração</a>';
+                    echo '<a href="perfil/perfil.php">Perfil</a>';
                     echo '<a href="logout.php">Logout</a>';
                     // Adicionar rotas
                 } elseif ($_SESSION['cargo'] == 'Professor') {
@@ -108,30 +121,18 @@ function getSalaImage($tipo)
                     <label for="tipo">Tipo de Sala</label>
                     <select id="tipo" onchange="applyFilters()">
                         <option value="">Todos os tipos</option>
-                        <option value="Arte" <?php echo $tipoFiltro == 'Arte' ? 'selected' : ''; ?>>Arte</option>
-                        <option value="Auditório" <?php echo $tipoFiltro == 'Auditório' ? 'selected' : ''; ?>>Auditório
-                        </option>
-                        <option value="Biblioteca" <?php echo $tipoFiltro == 'Biblioteca' ? 'selected' : ''; ?>>Biblioteca
-                        </option>
-                        <option value="Informática" <?php echo $tipoFiltro == 'Informática' ? 'selected' : ''; ?>>
-                            Informática</option>
-                        <option value="Laboratório" <?php echo $tipoFiltro == 'Laboratório' ? 'selected' : ''; ?>>
-                            Laboratório</option>
-                        <option value="Mecânica" <?php echo $tipoFiltro == 'Mecânica' ? 'selected' : ''; ?>>Mecânica
-                        </option>
-                        <option value="Multimédia" <?php echo $tipoFiltro == 'Multimédia' ? 'selected' : ''; ?>>Multimédia
-                        </option>
-                        <option value="Música" <?php echo $tipoFiltro == 'Música' ? 'selected' : ''; ?>>Música</option>
-                        <option value="Pavilhão" <?php echo $tipoFiltro == 'Pavilhão' ? 'selected' : ''; ?>>Pavilhão
-                        </option>
-                        <option value="Reunião" <?php echo $tipoFiltro == 'Reunião' ? 'selected' : ''; ?>>Reunião</option>
-                        <option value="Teórica" <?php echo $tipoFiltro == 'Teórica' ? 'selected' : ''; ?>>Teórica</option>
+                        <?php foreach ($tipos as $tipo): ?>
+                            <option value="<?php echo $tipo; ?>" <?php echo $tipoFiltro == $tipo ? 'selected' : ''; ?>>
+                                <?php echo $tipo; ?>
+                            </option>
+                        <?php endforeach; ?>
                     </select>
                 </div>
                 <div class="filter-group">
                     <label for="capacidade">Capacidade Mínima</label>
                     <input type="number" id="capacidade" min="1" onchange="applyFilters()"
-                        value="<?php echo $capacidadeFiltro; ?>">
+                        value="<?php echo $capacidadeFiltro ? $capacidadeFiltro : 0; ?>">
+
                 </div>
                 <div class="filter-group">
                     <label for="data">Data</label>

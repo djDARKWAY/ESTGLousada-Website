@@ -1,6 +1,0 @@
-[Tue Dec 03 18:42:36.328072 2024] [ssl:warn] [pid 4484:tid 160] AH01909: saw:443:0 server certificate does NOT include an ID which matches the server name
-[Tue Dec 03 18:42:36.423531 2024] [ssl:warn] [pid 4484:tid 160] AH01909: saw:443:0 server certificate does NOT include an ID which matches the server name
-[Tue Dec 03 18:42:37.188177 2024] [ssl:warn] [pid 7536:tid 376] AH01909: saw:443:0 server certificate does NOT include an ID which matches the server name
-[Tue Dec 03 18:42:37.257924 2024] [ssl:warn] [pid 7536:tid 376] AH01909: saw:443:0 server certificate does NOT include an ID which matches the server name
-[Tue Dec 03 19:55:13.654374 2024] [php:error] [pid 7536:tid 1952] [client 127.0.0.1:52585] script 'C:/saw/public_html/resources/login/registar.php' not found or unable to stat, referer: https://saw.pt/
-[Tue Dec 03 19:55:25.919471 2024] [php:error] [pid 7536:tid 1944] [client 127.0.0.1:52633] script 'C:/saw/public_html/resources/login/registar.php' not found or unable to stat, referer: https://saw.pt/

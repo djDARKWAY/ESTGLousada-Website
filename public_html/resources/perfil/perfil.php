@@ -47,7 +47,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else if (!preg_match('/^(255|91|92|93|96)[0-9]{7}$/', $contacto)) {
         echo "<p>O número tem de começar por 255, 91, 92, 93 ou 96 e ter 9 dígitos.</p>";
     } else {
-        $imagemPerfil = null;
+        // Definir imagem de perfil
+        $imagemPerfil = $utilizador['imagemPerfil'];
         if (isset($_FILES['imagemPerfil']) && $_FILES['imagemPerfil']['error'] == 0) {
             $imagemTipo = $_FILES['imagemPerfil']['type'];
             if ($imagemTipo == 'image/png' || $imagemTipo == 'image/jpeg') {
@@ -114,16 +115,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
                 <input type="file" id="imagemPerfil" name="imagemPerfil" accept="image/png, image/jpeg">
                 <label for="nome">Nome:</label>
-                <input type="text" id="nome" name="nome" value="<?php echo htmlspecialchars($utilizador['nome']); ?>"
-                    required>
+                <input type="text" id="nome" name="nome" value="<?php echo htmlspecialchars($utilizador['nome']); ?>" required>
 
                 <label for="email">Email:</label>
-                <input type="email" id="email" name="email"
-                    value="<?php echo htmlspecialchars($utilizador['email']); ?>" required>
+                <input type="email" id="email" name="email" value="<?php echo htmlspecialchars($utilizador['email']); ?>" required>
 
                 <label for="contacto">Contacto:</label>
-                <input type="text" id="contacto" name="contacto"
-                    value="<?php echo htmlspecialchars($utilizador['contacto']); ?>" required>
+                <input type="text" id="contacto" name="contacto" value="<?php echo htmlspecialchars($utilizador['contacto']); ?>" required>
 
                 <label for="novaPassword">Nova palavra-passe (opcional):</label>
                 <input type="password" id="novaPassword" name="novaPassword">

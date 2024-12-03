@@ -7,7 +7,7 @@ $conn = getDatabaseConnection();
 
 // Verificar se o utilizador está logado
 if (!isset($_SESSION['utilizador'])) {
-    header("Location: login.php");
+    header("Location: login/login.php");
     exit();
 }
 
@@ -90,13 +90,17 @@ function getSalaImage($tipo)
             <div class="nav-links">
                 <?php
                 if ($_SESSION['cargo'] == 'Administrador') {
-                    echo '<a href="admin.php">Administração</a>';
-                    echo '<a href="gestaoUtilizadores.php">Gestão de Utilizadores</a>';
+                    echo '<a href="logout.php">Logout</a>';
+                    // Adicionar rotas
                 } elseif ($_SESSION['cargo'] == 'Professor') {
-                    echo '<a href="reservarSala.php">Reservar Sala</a>';
+                    echo '<a href="perfil/perfil.php">Perfil</a>';
+                    echo '<a href="logout.php">Logout</a>';
+                    // Adicionar rotas
+                } else {
+                    echo '<a href="login/login.php">Login</a>';
+                    echo '<a href="login/registar.php">Registar</a>';
                 }
                 ?>
-                <a href="logout.php">Logout</a>
             </div>
         </div>
     </nav>

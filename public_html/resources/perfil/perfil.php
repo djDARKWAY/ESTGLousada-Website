@@ -1,7 +1,7 @@
 <?php
 session_start();
 if (!isset($_SESSION['utilizador'])) {
-    header('Location: login/login.php');
+    header('Location: ../login/login.php');
     exit();
 }
 
@@ -19,10 +19,11 @@ $utilizador = $result->fetch_assoc();
 
 // Processar submissão do formulário
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $nome = $_POST['nome'];
-    $email = strtolower($_POST['email']);
-    $contacto = $_POST['contacto'];
-    $novaPassword = $_POST['novaPassword'] ?? null;
+    $nome = ($_POST['nome']);
+    $username = trim(filter_var(strtolower($_POST['username']), FILTER_SANITIZE_STRING));
+    $email = trim(filter_var(strtolower($_POST['email']), FILTER_SANITIZE_EMAIL));
+    $contacto = trim(filter_var($_POST['contacto'], FILTER_SANITIZE_STRING));
+    $confirmarPassword = $_POST['confirmarPassword'];
 
     // Verificar se o email já existe para outro utilizador
     $checkSql = "SELECT idUtilizador FROM utilizador WHERE email = ? AND idUtilizador != ?";
@@ -31,56 +32,56 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmtCheck->execute();
     $checkResult = $stmtCheck->get_result();
 
-    $verificacaoPassword = "/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/";
+    // Verificação de username
+    $checkUsernameSql = "SELECT idUtilizador FROM utilizador WHERE username = ? AND idUtilizador != ?";
+    $stmtCheckUsername = $conn->prepare($checkUsernameSql);
+    $stmtCheckUsername->bind_param("si", $username, $idUtilizador);
+    $stmtCheckUsername->execute();
+    $checkUsernameResult = $stmtCheckUsername->get_result();
 
-    // Validações
-    $nome = trim(filter_var($nome, FILTER_SANITIZE_STRING));
-    $email = trim(filter_var($email, FILTER_SANITIZE_EMAIL));
-    $contacto = trim(filter_var($contacto, FILTER_SANITIZE_STRING));
+    // Verificar a palavra-passe
+    $salt = $utilizador['salt'];
+    $hashedPassword = $utilizador['password'];
+    $imagemPerfil = $utilizador['imagemPerfil'];
 
-    if ($checkResult->num_rows > 0) {
-        $erro = "Este email já está em uso.";
-    } else if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        echo "<p>Formato de email inválido!</p>";
-    } else if ($novaPassword && !preg_match($verificacaoPassword, $novaPassword)) {
-        echo "<p>Password deve conter pelo menos 8 caracteres, uma letra maiúscula, uma letra minúscula, um número e um caractere especial.</p>";
-    } else if (!preg_match('/^(255|91|92|93|96)[0-9]{7}$/', $contacto)) {
-        echo "<p>O número tem de começar por 255, 91, 92, 93 ou 96 e ter 9 dígitos.</p>";
+    if (empty($confirmarPassword)) {
+        $erro = "Por favor, insira a sua palavra-passe!";
+    } elseif (!password_verify($salt . $confirmarPassword, $hashedPassword)) {
+        $erro = "Palavra-passe incorreta!";
+    } elseif ($checkResult->num_rows > 0) {
+        $erro = "Email já está a ser usado por outra conta!";
+    } elseif ($checkUsernameResult->num_rows > 0) {
+        $erro = "Username já está a ser usado!";
+    } elseif (!preg_match('/^[a-zA-Z_]{4,}$/', $username)) {
+        $erro = "Username deve conter pelo menos 4 caracteres.";
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $erro = "Formato de email inválido!";
+    } elseif (!preg_match('/^(255|91|92|93|96)[0-9]{7}$/', $contacto)) {
+        $erro = "O número deve começar por 255, 91, 92, 93 ou 96 e ter 9 dígitos.";
     } else {
-        // Definir imagem de perfil
-        $imagemPerfil = $utilizador['imagemPerfil'];
         if (isset($_FILES['imagemPerfil']) && $_FILES['imagemPerfil']['error'] == 0) {
             $imagemTipo = $_FILES['imagemPerfil']['type'];
             if ($imagemTipo == 'image/png' || $imagemTipo == 'image/jpeg') {
                 $imagemPerfil = file_get_contents($_FILES['imagemPerfil']['tmp_name']);
             } else {
-                echo "<p>Por favor, carregue uma imagem PNG ou JPEG.</p>";
+                $erro = "Por favor, carregue uma imagem PNG ou JPEG.";
             }
         }
 
-        if ($novaPassword) {
-            $salt = bin2hex(random_bytes(10));
-            $hashedPassword = password_hash($salt . $novaPassword, PASSWORD_BCRYPT);
-            $updateSql = "UPDATE utilizador SET nome = ?, email = ?, contacto = ?, imagemPerfil = ?, password = ?, salt = ? WHERE idUtilizador = ?";
-            $stmt = $conn->prepare($updateSql);
-            $stmt->bind_param("ssssssi", $nome, $email, $contacto, $imagemPerfil, $hashedPassword, $salt, $idUtilizador);
-        } else {
-            $updateSql = "UPDATE utilizador SET nome = ?, email = ?, contacto = ?, imagemPerfil = ? WHERE idUtilizador = ?";
-            $stmt = $conn->prepare($updateSql);
-            $stmt->bind_param("ssssi", $nome, $email, $contacto, $imagemPerfil, $idUtilizador);
-        }
+            // Atualizar os dados do utilizador
+            $updateSql = "UPDATE utilizador SET username = ?, nome = ?, email = ?, contacto = ?, imagemPerfil = ? WHERE idUtilizador = ?";
+            $stmtUpdate = $conn->prepare($updateSql);
+            $stmtUpdate->bind_param("sssssi", $username, $nome, $email, $contacto, $imagemPerfil, $idUtilizador);
 
-        if ($stmt->execute()) {
-            $mensagem = "Informações atualizadas com sucesso!";
-        } else {
-            $erro = "Erro ao atualizar informações!";
+            if ($stmtUpdate->execute()) {
+                $mensagem = "Informações atualizadas com sucesso!";
+            } else {
+                $erro = "Erro ao atualizar informações!";
+            }
         }
-
-        header('Location: ' . $_SERVER['PHP_SELF']);
-        exit();
-    }
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="pt-PT">
@@ -117,14 +118,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <label for="nome">Nome:</label>
                 <input type="text" id="nome" name="nome" value="<?php echo htmlspecialchars($utilizador['nome']); ?>" required>
 
+                <label for="username">Username:</label>
+                <input type="text" id="username" name="username" value="<?php echo htmlspecialchars($utilizador['username']); ?>" required>
+
                 <label for="email">Email:</label>
                 <input type="email" id="email" name="email" value="<?php echo htmlspecialchars($utilizador['email']); ?>" required>
 
                 <label for="contacto">Contacto:</label>
                 <input type="text" id="contacto" name="contacto" value="<?php echo htmlspecialchars($utilizador['contacto']); ?>" required>
 
-                <label for="novaPassword">Nova palavra-passe (opcional):</label>
-                <input type="password" id="novaPassword" name="novaPassword">
+                <label for="confirmarPassword">Palavra-passe para guardar alterações:</label>
+                <input type="password" id="confirmarPassword" name="confirmarPassword">
+
+                <a href="alterarPassword.php">Clique aqui para alterar a sua palavra-passe</a>
 
                 <button type="submit">Guardar alterações</button>
 

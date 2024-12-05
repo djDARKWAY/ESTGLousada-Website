@@ -36,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif (strlen($novaPassword) < 8) {
         $erro = "A nova palavra-passe deve ter pelo menos 8 caracteres.";
     } else {
-        
+
         // Atualizar a palavra-passe
         $salt = bin2hex(random_bytes(10));
         $novaPasswordHash = password_hash($salt . $novaPassword, PASSWORD_DEFAULT);
@@ -65,31 +65,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <body>
     <div class="container">
-        <div class="login-box">
-            <?php if (isset($mensagem)): ?>
-                <p style="color:lightgreen; font-weight:bold;"><?php echo $mensagem; ?></p>
-            <?php endif; ?>
-            <?php if (isset($erro)): ?>
-                <p style="color:red; font-weight:bold;"><?php echo $erro; ?></p>
-            <?php endif; ?>
+        <?php if (isset($mensagem)): ?>
+            <p style="color:lightgreen; font-weight:bold;"><?php echo $mensagem; ?></p>
+        <?php endif; ?>
+        <?php if (isset($erro)): ?>
+            <p style="color:red; font-weight:bold;"><?php echo $erro; ?></p>
+        <?php endif; ?>
 
-            <form method="POST" action="">
-                <h1>Alterar Palavra-passe</h1>
+        <form method="POST" action="">
+            <label for="passwordAntiga">Antiga palavra-passe:</label>
+            <input type="password" id="passwordAntiga" name="passwordAntiga" required>
 
-                <label for="passwordAntiga">Password antiga:</label>
-                <input type="password" id="passwordAntiga" name="passwordAntiga" required>
+            <label for="novaPassword">Nova palavra-passe:</label>
+            <input type="password" id="novaPassword" name="novaPassword" required>
 
-                <label for="novaPassword">Nova password:</label>
-                <input type="password" id="novaPassword" name="novaPassword" required>
+            
+            <label for="confirmarNovaPassword">Confirmar nova palavra-passe:</label>
+            <input type="password" id="confirmarNovaPassword" name="confirmarNovaPassword" required>
 
-                <label for="confirmarNovaPassword">Confirmar nova password:</label>
-                <input type="password" id="confirmarNovaPassword" name="confirmarNovaPassword" required>
+            <button type="submit">Alterar palavra-passe</button>
 
-                <button type="submit">Alterar palavra-passe</button>
-
-                <a class="voltar" href="../perfil/perfil.php">◄ Voltar</a>
-            </form>
-        </div>
+            <a class="voltar" href="../perfil/perfil.php">◄ Voltar</a>
+        </form>
     </div>
 </body>
 

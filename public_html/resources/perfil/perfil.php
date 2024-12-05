@@ -68,17 +68,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
-            // Atualizar os dados do utilizador
-            $updateSql = "UPDATE utilizador SET username = ?, nome = ?, email = ?, contacto = ?, imagemPerfil = ? WHERE idUtilizador = ?";
-            $stmtUpdate = $conn->prepare($updateSql);
-            $stmtUpdate->bind_param("sssssi", $username, $nome, $email, $contacto, $imagemPerfil, $idUtilizador);
+        // Atualizar os dados do utilizador
+        $updateSql = "UPDATE utilizador SET username = ?, nome = ?, email = ?, contacto = ?, imagemPerfil = ? WHERE idUtilizador = ?";
+        $stmtUpdate = $conn->prepare($updateSql);
+        $stmtUpdate->bind_param("sssssi", $username, $nome, $email, $contacto, $imagemPerfil, $idUtilizador);
 
-            if ($stmtUpdate->execute()) {
-                $mensagem = "Informações atualizadas com sucesso!";
-            } else {
-                $erro = "Erro ao atualizar informações!";
-            }
+        if ($stmtUpdate->execute()) {
+            $mensagem = "Informações atualizadas com sucesso!";
+        } else {
+            $erro = "Erro ao atualizar informações!";
         }
+    }
 }
 ?>
 
@@ -108,29 +108,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="imagemPerfil">
                     <?php
                     if ($utilizador['imagemPerfil']) {
-                        echo '<img src="data:image/jpeg;base64,' . base64_encode($utilizador['imagemPerfil']) . '" alt="Foto de Perfil" style="width: 200px; height: 200px; border-radius: 50%; object-fit: cover;">';
+                        echo '<img src="data:image/jpeg;base64,' . base64_encode($utilizador['imagemPerfil']) . '"style="width: 180px; height: 180px; border-radius: 50%; object-fit: cover;">';
                     } else {
-                        echo 'Sem imagem de perfil.';
+                        echo '<img src="../media/semFotoPerfil.png" alt="Foto de Perfil Padrão" style="width: 180px; height: 180px; border-radius: 50%; object-fit: cover;">';
                     }
                     ?>
                 </div>
                 <input type="file" id="imagemPerfil" name="imagemPerfil" accept="image/png, image/jpeg">
                 <label for="nome">Nome:</label>
-                <input type="text" id="nome" name="nome" value="<?php echo htmlspecialchars($utilizador['nome']); ?>" required>
+                <input type="text" id="nome" name="nome" value="<?php echo htmlspecialchars($utilizador['nome']); ?>"
+                    required>
 
                 <label for="username">Username:</label>
-                <input type="text" id="username" name="username" value="<?php echo htmlspecialchars($utilizador['username']); ?>" required>
+                <input type="text" id="username" name="username"
+                    value="<?php echo htmlspecialchars($utilizador['username']); ?>" required>
 
                 <label for="email">Email:</label>
-                <input type="email" id="email" name="email" value="<?php echo htmlspecialchars($utilizador['email']); ?>" required>
+                <input type="email" id="email" name="email"
+                    value="<?php echo htmlspecialchars($utilizador['email']); ?>" required>
 
                 <label for="contacto">Contacto:</label>
-                <input type="text" id="contacto" name="contacto" value="<?php echo htmlspecialchars($utilizador['contacto']); ?>" required>
+                <input type="text" id="contacto" name="contacto"
+                    value="<?php echo htmlspecialchars($utilizador['contacto']); ?>" required>
 
-                <label for="confirmarPassword">Palavra-passe para guardar alterações:</label>
+                <label for="confirmarPassword">Validar palavra-passe:</label>
                 <input type="password" id="confirmarPassword" name="confirmarPassword">
 
-                <a href="alterarPassword.php">Clique aqui para alterar a sua palavra-passe</a>
+                <button type="button" class="buttonSec" onclick="window.location.href='alterarPassword.php'">Alterar palavra-passe</button>
 
                 <button type="submit">Guardar alterações</button>
 

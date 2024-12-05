@@ -119,7 +119,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <input type="text" id="nome" name="nome" value="<?php echo htmlspecialchars($utilizador['nome']); ?>"
                     required>
 
-                <label for="username">Username:</label>
+                <label for="username">Utilizador:</label>
                 <input type="text" id="username" name="username"
                     value="<?php echo htmlspecialchars($utilizador['username']); ?>" required>
 
@@ -134,9 +134,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <label for="confirmarPassword">Validar palavra-passe:</label>
                 <input type="password" id="confirmarPassword" name="confirmarPassword">
 
-                <button type="button" class="buttonSec" onclick="window.location.href='alterarPassword.php'">Alterar palavra-passe</button>
-
                 <button type="submit">Guardar alterações</button>
+
+                <button type="button" class="buttonSec" onclick="window.location.href='alterarPassword.php'">Alterar palavra-passe</button>
 
                 <a class="voltar" href="../index.php">◄ Voltar</a>
             </form>

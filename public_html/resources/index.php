@@ -6,6 +6,30 @@ session_start();
 include('conexao.php');
 $conn = getDatabaseConnection();
 
+// Verificar se o utilizador está autenticado via sessão ou cookie
+$autenticado = false;
+
+if (isset($_SESSION['cargo'])) {
+    $autenticado = true;
+} elseif (isset($_COOKIE['remember_me'])) {
+    $rememberMeToken = $_COOKIE['remember_me'];
+
+    $sql = "SELECT idUtilizador, cargo, nome FROM utilizador WHERE rememberToken = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("s", $rememberMeToken);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($result->num_rows > 0) {
+        $user = $result->fetch_assoc();
+
+        // Configurar a sessão com os dados do utilizador
+        $_SESSION['id'] = $user['id'];
+        $_SESSION['cargo'] = $user['cargo'];
+        $_SESSION['nome'] = $user['nome'];
+        $autenticado = true;
+    }
+}
 
 // Receber os parâmetros dos filtros
 $tipoFiltro = isset($_GET['tipo']) ? $_GET['tipo'] : '';
@@ -100,11 +124,9 @@ function getSalaImage($tipo)
                     echo '<a href="areaAdmin/areaAdmin.php">Área de administração</a>';
                     echo '<a href="perfil/perfil.php">Perfil</a>';
                     echo '<a href="logout.php">Logout</a>';
-                    // Adicionar rotas
                 } elseif ($_SESSION['cargo'] == 'Professor') {
                     echo '<a href="perfil/perfil.php">Perfil</a>';
                     echo '<a href="logout.php">Logout</a>';
-                    // Adicionar rotas
                 } else {
                     echo '<a href="login/login.php">Login</a>';
                     echo '<a href="registar/registar.php">Registar</a>';
@@ -134,10 +156,12 @@ function getSalaImage($tipo)
                         value="<?php echo $capacidadeFiltro ? $capacidadeFiltro : 0; ?>">
 
                 </div>
+                <?php if ($autenticado): ?>
                 <div class="filter-group">
                     <label for="data">Data</label>
                     <input type="date" id="data" onchange="applyFilters()">
                 </div>
+                <?php endif; ?>
                 <div class="filter-group">
                     <label>&nbsp;</label>
                     <button class="btn" onclick="resetFilters()">Limpar filtros</button>
@@ -157,11 +181,14 @@ function getSalaImage($tipo)
                                 <span>Capacidade: <?php echo $sala['capacidade']; ?></span>
                                 <span>Tipo: <?php echo $sala['tipo']; ?></span>
                             </div>
-                            <div class="status">
-                                (disponibilidade)
-                            </div>
+                            <?php if ($autenticado): ?>
+                                <div class="status">
+                                    (Disponibilidade)
+                                </div>
+
+                                <button class="btn reservar-btn">Reservar</button>
+                            <?php endif; ?>
                         </div>
-                        <button class="btn reservar-btn">Reservar</button>
                     </div>
                 </div>
             <?php endforeach; ?>
@@ -182,6 +209,7 @@ function getSalaImage($tipo)
 
             window.location.href = url;
         }
+
         function resetFilters() {
             window.location.href = window.location.pathname;
         }

@@ -92,7 +92,8 @@ $result = $stmt->get_result();
 
                         <div class="filter-item">
                             <label for="username">Utilizador</label>
-                            <input type="text" name="username" value="<?php echo htmlspecialchars($_GET['username'] ?? ''); ?>">
+                            <input type="text" name="username"
+                                value="<?php echo htmlspecialchars($_GET['username'] ?? ''); ?>">
                         </div>
 
                         <div class="filter-item">
@@ -104,12 +105,14 @@ $result = $stmt->get_result();
                     <div class="filter-row">
                         <div class="filter-item">
                             <label for="email">Email</label>
-                            <input type="text" name="email" value="<?php echo htmlspecialchars($_GET['email'] ?? ''); ?>">
+                            <input type="text" name="email"
+                                value="<?php echo htmlspecialchars($_GET['email'] ?? ''); ?>">
                         </div>
 
                         <div class="filter-item">
                             <label for="contacto">Contacto</label>
-                            <input type="text" name="contacto" value="<?php echo htmlspecialchars($_GET['contacto'] ?? ''); ?>" maxlength="9">
+                            <input type="text" name="contacto"
+                                value="<?php echo htmlspecialchars($_GET['contacto'] ?? ''); ?>" maxlength="9">
                         </div>
 
                         <div class="filter-item">
@@ -149,8 +152,10 @@ $result = $stmt->get_result();
                         <td><?php echo htmlspecialchars($row['contacto']); ?></td>
                         <td><?php echo htmlspecialchars($row['cargo']); ?></td>
                         <td>
-                            <a class="btn btn-secondary" href="editarUtilizador.php?id=<?php echo $row['idUtilizador']; ?>">Editar</a>
-                            <a class="btn" href="?eliminar=<?php echo $row['idUtilizador']; ?>" onclick="return confirm('Tem a certeza que deseja eliminar?')">Eliminar</a>
+                            <a class="btn btn-secondary"
+                                href="editarUtilizador.php?id=<?php echo $row['idUtilizador']; ?>">Editar</a>
+                            <a class="btn" href="?eliminar=<?php echo $row['idUtilizador']; ?>"
+                                onclick="return confirm('Tem a certeza que deseja eliminar?')">Eliminar</a>
                         </td>
                     </tr>
                 <?php endwhile; ?>
@@ -160,7 +165,7 @@ $result = $stmt->get_result();
 
     <script>
         // Função para aplicar os filtros quando a tecla 'Enter' for pressionada
-        document.getElementById('filtersForm').addEventListener('keypress', function(event) {
+        document.getElementById('filtersForm').addEventListener('keypress', function (event) {
             if (event.key === 'Enter') {
                 event.preventDefault(); // Previne o envio do formulário
                 applyFilters();
@@ -179,7 +184,7 @@ $result = $stmt->get_result();
             });
 
             url = url.endsWith('&') ? url.slice(0, -1) : url;
-            window.location.href = url;  // Redireciona com os parâmetros de filtro
+            window.location.href = url;
         }
     </script>
 </body>

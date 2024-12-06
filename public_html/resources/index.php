@@ -157,10 +157,10 @@ function getSalaImage($tipo)
 
                 </div>
                 <?php if ($autenticado): ?>
-                <div class="filter-group">
-                    <label for="data">Data</label>
-                    <input type="date" id="data" onchange="applyFilters()">
-                </div>
+                    <div class="filter-group">
+                        <label for="data">Data</label>
+                        <input type="date" id="data" onchange="applyFilters()">
+                    </div>
                 <?php endif; ?>
                 <div class="filter-group">
                     <label>&nbsp;</label>
@@ -168,7 +168,6 @@ function getSalaImage($tipo)
                 </div>
             </div>
         </div>
-
 
         <div class="grid">
             <?php foreach ($salas as $sala): ?>
@@ -185,8 +184,9 @@ function getSalaImage($tipo)
                                 <div class="status">
                                     (Disponibilidade)
                                 </div>
-
-                                <button class="btn reservar-btn">Reservar</button>
+                                <a href="../reservarSala/reservarSala.php?idSala=<?php echo $sala['idSala']; ?>" class="btn reservar-btn">
+                                    Reservar
+                                </a>
                             <?php endif; ?>
                         </div>
                     </div>

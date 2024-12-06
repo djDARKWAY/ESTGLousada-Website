@@ -24,7 +24,7 @@ if (isset($_SESSION['cargo'])) {
         $user = $result->fetch_assoc();
 
         // Configurar a sessão com os dados do utilizador
-        $_SESSION['id'] = $user['id'];
+        $_SESSION['idUtilizador'] = $user['idUtilizador'];
         $_SESSION['cargo'] = $user['cargo'];
         $_SESSION['nome'] = $user['nome'];
         $autenticado = true;

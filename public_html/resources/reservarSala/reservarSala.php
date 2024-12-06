@@ -5,40 +5,14 @@ session_start();
 include('../conexao.php');
 $conn = getDatabaseConnection();
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $idSala = isset($_POST['idSala']) ? $_POST['idSala'] : 0;
-    $reservas = isset($_POST['reservas']) ? json_decode($_POST['reservas'], true) : [];
-
-    if ($idSala && !empty($reservas)) {
-        foreach ($reservas as $reserva) {
-            $horaInicio = $reserva['horaInicio'];
-            $horaFim = $reserva['horaFim'];
-            $dataReserva = date('Y-m-d');
-
-            $sql = "INSERT INTO reserva (idSala, idUtilizador, dataReserva, horaInicio, horaFim) VALUES (?, ?, ?, ?, ?)";
-            $stmt = $conn->prepare($sql);
-            $stmt->bind_param("iisss", $idSala, $idUtilizador, $dataReserva, $horaInicio, $horaFim);
-
-            if ($stmt->execute()) {
-                $response = ['success' => true];
-            } else {
-                $response = ['success' => false];
-            }
-        }
-    } else {
-        $response = ['success' => false];
-    }
-
-    echo json_encode($response);
-    exit();
-}
-
+// Validar ID da sala
 if (!isset($_GET['idSala']) || empty($_GET['idSala'])) {
     die("Sala não especificada.");
 }
 
 $idSala = $_GET['idSala'];
 
+// Obter detalhes da sala
 $sql = "SELECT idSala, nome, tipo, descricao, capacidade, estado FROM sala WHERE idSala = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $idSala);
@@ -51,21 +25,23 @@ if ($result->num_rows === 0) {
 
 $sala = $result->fetch_assoc();
 
-$dataReserva = isset($_GET['dataReserva']) ? $_GET['dataReserva'] : date('Y-m-d');
+// Obter data da reserva
+$dataReserva = $_GET['dataReserva'] ?? date('Y-m-d');
 
+// Obter reservas para a data selecionada
 $sqlReservas = "SELECT TIME_FORMAT(horaInicio, '%H:%i') AS horaInicio, TIME_FORMAT(horaFim, '%H:%i') AS horaFim FROM reserva WHERE idSala = ? AND dataReserva = ?";
 $stmtReservas = $conn->prepare($sqlReservas);
 $stmtReservas->bind_param("is", $idSala, $dataReserva);
 $stmtReservas->execute();
 $reservasResult = $stmtReservas->get_result();
 
+// Processar horários reservados
 $reservas = [];
 while ($row = $reservasResult->fetch_assoc()) {
-    $horaInicio = $row['horaInicio'];
-    $horaFim = $row['horaFim'];
+    $horaAtual = strtotime($row['horaInicio']);
+    $horaFim = strtotime($row['horaFim']);
 
-    $horaAtual = strtotime($horaInicio);
-    while ($horaAtual < strtotime($horaFim)) {
+    while ($horaAtual < $horaFim) {
         $reservas[] = date('H:i', $horaAtual);
         $horaAtual = strtotime("+1 hour", $horaAtual);
     }
@@ -73,6 +49,7 @@ while ($row = $reservasResult->fetch_assoc()) {
 
 $stmtReservas->close();
 
+// Função para determinar a imagem com base no tipo da sala
 function getSalaImage($tipo)
 {
     $imagens = [
@@ -88,9 +65,10 @@ function getSalaImage($tipo)
         'Reunião' => '../media/salaReuniao.jpg',
         'Teórica' => '../media/salaTeorica.jpg'
     ];
-    return isset($imagens[$tipo]) ? $imagens[$tipo] : '../media/salaDefault.png';
+    return $imagens[$tipo] ?? '../media/salaDefault.png';
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="pt-PT">
@@ -229,7 +207,7 @@ function getSalaImage($tipo)
                 var horaInicio = "";
                 var horaFim = "";
 
-                checkboxes.forEach(function (checkbox, index) {
+                checkboxes.forEach(function(checkbox, index) {
                     var hora = checkbox.getAttribute('data-hora');
                     if (horaInicio === "") {
                         horaInicio = hora;
@@ -237,14 +215,56 @@ function getSalaImage($tipo)
 
                     if (index === checkboxes.length - 1 || !isNextHour(checkboxes[index], checkboxes[index + 1])) {
                         horaFim = incrementHour(hora);
-                        horariosSelecionados.push({ horaInicio: horaInicio, horaFim: horaFim });
+                        horariosSelecionados.push({
+                            horaInicio: horaInicio,
+                            horaFim: horaFim
+                        });
                         horaInicio = "";
                     }
                 });
 
                 if (confirm("Tem a certeza de que deseja reservar para as seguintes horas: " + horariosSelecionados.map(r => r.horaInicio + " - " + r.horaFim).join(', ') + "?")) {
-                    var idSala = "<?php echo $idSala; ?>";
-                    window.location.href = "/reservarSala/reservarSala.php?idSala=" + idSala + "&reservas=" + JSON.stringify(horariosSelecionados);
+                    <?php if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                        $idUtilizador = isset($_SESSION['idUtilizador']) ? $_SESSION['idUtilizador'] : 0;
+                        $idSala = isset($_POST['idSala']) ? $_POST['idSala'] : 0;
+                        $reservas = isset($_POST['reservas']) ? json_decode($_POST['reservas'], true) : [];
+
+
+                        if ($idSala && !empty($reservas)) {
+                            foreach ($reservas as $reserva) {
+                                $horaInicio = $reserva['horaInicio'];
+                                $horaFim = $reserva['horaFim'];
+                                $dataReserva = isset($_POST['dataReserva']) ? $_POST['dataReserva'] : date('Y-m-d');
+
+                                $sql = "INSERT INTO reserva (idSala, idUtilizador, dataReserva, horaInicio, horaFim) VALUES (?, ?, ?, ?, ?)";
+                                $stmt = $conn->prepare($sql);
+                                $stmt->bind_param("iisss", $idSala, $idUtilizador, $dataReserva, $horaInicio, $horaFim);
+
+                                if ($stmt->execute()) {
+                                    $response = ['success' => true];
+                                } else {
+                                    $response = ['success' => false];
+                                }
+                            }
+                        } else {
+                            $response = ['success' => false];
+                        }
+
+                        echo json_encode($response);
+                        exit();
+                    }
+                    ?>
+                    var xhr = new XMLHttpRequest();
+                    xhr.open("POST", window.location.href, true);
+                    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+                    
+
+                    var data = new URLSearchParams();
+                    data.append("idSala", "<?php echo $idSala; ?>");
+                    var dataReservaSelecionada = document.getElementById('dataReserva').value;
+                    data.append("dataReserva", dataReservaSelecionada);
+                    data.append("reservas", JSON.stringify(horariosSelecionados));
+                    xhr.send(data.toString());
                 }
             } else {
                 alert("Selecione ao menos uma hora para reservar.");

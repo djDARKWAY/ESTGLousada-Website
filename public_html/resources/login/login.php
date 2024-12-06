@@ -56,7 +56,7 @@
             // Verifica se a senha fornecida corresponde à senha armazenada
             if (password_verify($salt . $password, $hashedPassword)) {
                 session_start();
-                $_SESSION['utilizador'] = $utilizador['idUtilizador'];
+                $_SESSION['idUtilizador'] = $utilizador['idUtilizador'];
                 $_SESSION['cargo'] = $utilizador['cargo'];
 
                 // Verifica se o utilizador pediu para manter a sessão

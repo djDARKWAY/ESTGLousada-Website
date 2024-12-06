@@ -5,6 +5,34 @@ session_start();
 include('../conexao.php');
 $conn = getDatabaseConnection();
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $idSala = isset($_POST['idSala']) ? $_POST['idSala'] : 0;
+    $reservas = isset($_POST['reservas']) ? json_decode($_POST['reservas'], true) : [];
+
+    if ($idSala && !empty($reservas)) {
+        foreach ($reservas as $reserva) {
+            $horaInicio = $reserva['horaInicio'];
+            $horaFim = $reserva['horaFim'];
+            $dataReserva = date('Y-m-d');
+
+            $sql = "INSERT INTO reserva (idSala, idUtilizador, dataReserva, horaInicio, horaFim) VALUES (?, ?, ?, ?, ?)";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("iisss", $idSala, $idUtilizador, $dataReserva, $horaInicio, $horaFim);
+
+            if ($stmt->execute()) {
+                $response = ['success' => true];
+            } else {
+                $response = ['success' => false];
+            }
+        }
+    } else {
+        $response = ['success' => false];
+    }
+
+    echo json_encode($response);
+    exit();
+}
+
 if (!isset($_GET['idSala']) || empty($_GET['idSala'])) {
     die("Sala não especificada.");
 }
@@ -198,23 +226,49 @@ function getSalaImage($tipo)
             var checkboxes = document.querySelectorAll('.checkbox:checked');
             if (checkboxes.length > 0) {
                 var horariosSelecionados = [];
-                checkboxes.forEach(function (checkbox) {
-                    horariosSelecionados.push(checkbox.getAttribute('data-hora'));
+                var horaInicio = "";
+                var horaFim = "";
+
+                checkboxes.forEach(function (checkbox, index) {
+                    var hora = checkbox.getAttribute('data-hora');
+                    if (horaInicio === "") {
+                        horaInicio = hora;
+                    }
+
+                    if (index === checkboxes.length - 1 || !isNextHour(checkboxes[index], checkboxes[index + 1])) {
+                        horaFim = incrementHour(hora);
+                        horariosSelecionados.push({ horaInicio: horaInicio, horaFim: horaFim });
+                        horaInicio = "";
+                    }
                 });
 
-                if (confirm("Tem a certeza de que deseja reservar para as seguintes horas: " + horariosSelecionados.join(', ') + "?")) {
+                if (confirm("Tem a certeza de que deseja reservar para as seguintes horas: " + horariosSelecionados.map(r => r.horaInicio + " - " + r.horaFim).join(', ') + "?")) {
                     var idSala = "<?php echo $idSala; ?>";
-                    window.location.href = "/reservarSala/reservarSala.php?idSala=" + idSala + "&horarios=" + horariosSelecionados.join(',');
+                    window.location.href = "/reservarSala/reservarSala.php?idSala=" + idSala + "&reservas=" + JSON.stringify(horariosSelecionados);
                 }
             } else {
                 alert("Selecione ao menos uma hora para reservar.");
             }
         }
+
+        function isNextHour(currentCheckbox, nextCheckbox) {
+            var currentHour = currentCheckbox.getAttribute('data-hora');
+            var nextHour = nextCheckbox.getAttribute('data-hora');
+            return parseInt(nextHour.split(':')[0]) === parseInt(currentHour.split(':')[0]) + 1;
+        }
+
+        function incrementHour(hora) {
+            var parts = hora.split(':');
+            var hours = parseInt(parts[0]);
+            var minutes = parts[1];
+            hours = (hours + 1) % 24;
+            return ("0" + hours).slice(-2) + ":" + minutes;
+        }
     </script>
+
 </body>
 
 </html>
-
 
 <?php
 $stmt->close();

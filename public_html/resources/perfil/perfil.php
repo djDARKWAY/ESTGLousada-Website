@@ -1,13 +1,13 @@
 <?php
 session_start();
-if (!isset($_SESSION['utilizador'])) {
+if (!isset($_SESSION['idUtilizador'])) {
     header('Location: ../login/login.php');
     exit();
 }
 
 require_once '../conexao.php';
 $conn = getDatabaseConnection();
-$idUtilizador = $_SESSION['utilizador'];
+$idUtilizador = $_SESSION['idUtilizador'];
 
 // Obter os dados do utilizador
 $sql = "SELECT * FROM utilizador WHERE idUtilizador = ?";
@@ -52,8 +52,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $erro = "Email já está a ser usado por outra conta!";
     } elseif ($checkUsernameResult->num_rows > 0) {
         $erro = "Username já está a ser usado!";
-    } elseif (!preg_match('/^[a-zA-Z_]{4,}$/', $username)) {
-        $erro = "Username deve conter pelo menos 4 caracteres.";
+    } elseif (!preg_match('/^[a-zA-Z0-9._-]{4,}$/', $username)) {
+        $erro = "Username deve conter pelo menos 4 caracteres e pode incluir letras, números, pontos, underscores e hífens.";
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $erro = "Formato de email inválido!";
     } elseif (!preg_match('/^(255|91|92|93|96)[0-9]{7}$/', $contacto)) {

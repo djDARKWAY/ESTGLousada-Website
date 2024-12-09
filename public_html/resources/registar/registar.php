@@ -84,8 +84,8 @@
                     echo "<p>Email já está em uso!</p>";
                 } else if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
                     echo "<p>Formato de email inválido!</p>";
-                } else if (!preg_match($verificacaoPassword, $password)) {
-                    echo "<p>Password deve conter pelo menos 8 caracteres, uma letra maiúscula, uma letra minúscula, um número e um caractere especial.</p>";
+                } elseif (!preg_match('/^[a-zA-Z0-9._-]{4,}$/', $username)) {
+                    $erro = "Username deve conter pelo menos 4 caracteres e pode incluir letras, números, pontos, underscores e hífens.";
                 } else if ($password !== $_POST['confirm_password']) {
                     echo "<p>As passwords não coincidem!</p>";
                 } else if (!preg_match('/^(255|91|92|93|96)[0-9]{7}$/', $contacto)) {

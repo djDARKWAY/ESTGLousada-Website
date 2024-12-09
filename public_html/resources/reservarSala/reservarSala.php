@@ -1,9 +1,37 @@
 <?php
 error_reporting(0);
 session_start();
-
 include('../conexao.php');
 $conn = getDatabaseConnection();
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $idUtilizador = isset($_SESSION['idUtilizador']) ? $_SESSION['idUtilizador'] : 0;
+    $idSala = isset($_POST['idSala']) ? $_POST['idSala'] : 0;
+    $reservas = isset($_POST['reservas']) ? json_decode($_POST['reservas'], true) : [];
+
+    if ($idSala && !empty($reservas)) {
+        foreach ($reservas as $reserva) {
+            $horaInicio = $reserva['horaInicio'];
+            $horaFim = $reserva['horaFim'];
+            $dataReserva = isset($_POST['dataReserva']) ? $_POST['dataReserva'] : date('Y-m-d');
+
+            $sql = "INSERT INTO reserva (idSala, idUtilizador, dataReserva, horaInicio, horaFim) VALUES (?, ?, ?, ?, ?)";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("iisss", $idSala, $idUtilizador, $dataReserva, $horaInicio, $horaFim);
+
+            if ($stmt->execute()) {
+                $response = ['success' => true];
+            } else {
+                $response = ['success' => false];
+            }
+        }
+    } else {
+        $response = ['success' => false];
+    }
+
+    echo json_encode($response);
+    exit();
+}
 
 // Validar ID da sala
 if (!isset($_GET['idSala']) || empty($_GET['idSala'])) {
@@ -26,7 +54,12 @@ if ($result->num_rows === 0) {
 $sala = $result->fetch_assoc();
 
 // Obter data da reserva
-$dataReserva = $_GET['dataReserva'] ?? date('Y-m-d');
+$dataReserva = $_GET['dataReserva'] ?? date('Y-m-d', strtotime('+1 day'));
+
+// Validar se a data da reserva é válida
+//if (strtotime($dataReserva) < strtotime('+1 day')) {
+//    die("Data inválida. Você não pode reservar uma sala para hoje ou uma data passada.");
+//}
 
 // Obter reservas para a data selecionada
 $sqlReservas = "SELECT TIME_FORMAT(horaInicio, '%H:%i') AS horaInicio, TIME_FORMAT(horaFim, '%H:%i') AS horaFim FROM reserva WHERE idSala = ? AND dataReserva = ?";
@@ -116,7 +149,7 @@ function getSalaImage($tipo)
         <div class="reservations">
             <div class="date-picker">
                 <label for="dataReserva">Data:</label>
-                <input type="date" id="dataReserva" value="<?php echo $dataReserva; ?>" onchange="updateDataReserva()">
+                <input type="date" id="dataReserva" value="<?php echo $dataReserva; ?>" min="<?php echo date('Y-m-d', strtotime('+1 day')); ?>" onchange="updateDataReserva()">
             </div>
 
             <div class="table-container">
@@ -197,6 +230,23 @@ function getSalaImage($tipo)
     <script>
         function updateDataReserva() {
             var dataReserva = document.getElementById('dataReserva').value;
+            var today = new Date();
+            var selectedDate = new Date(dataReserva);
+
+            // Set the time of today to midnight for comparison
+            today.setHours(0, 0, 0, 0);
+
+            // Check if the selected date is today or in the past
+            if (selectedDate <= today) {
+                alert("Você não pode reservar para hoje ou uma data passada.");
+                // Reset the date input to tomorrow
+                var tomorrow = new Date();
+                tomorrow.setDate(today.getDate() + 1);
+                document.getElementById('dataReserva').value = tomorrow.toISOString().split('T')[0];
+                return; // Exit the function
+            }
+
+            // If the date is valid, reload the page with the new date
             window.location.href = "?idSala=<?php echo $idSala; ?>&dataReserva=" + dataReserva;
         }
 
@@ -224,46 +274,32 @@ function getSalaImage($tipo)
                 });
 
                 if (confirm("Tem a certeza de que deseja reservar para as seguintes horas: " + horariosSelecionados.map(r => r.horaInicio + " - " + r.horaFim).join(', ') + "?")) {
-                    <?php if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-                        $idUtilizador = isset($_SESSION['idUtilizador']) ? $_SESSION['idUtilizador'] : 0;
-                        $idSala = isset($_POST['idSala']) ? $_POST['idSala'] : 0;
-                        $reservas = isset($_POST['reservas']) ? json_decode($_POST['reservas'], true) : [];
-
-
-                        if ($idSala && !empty($reservas)) {
-                            foreach ($reservas as $reserva) {
-                                $horaInicio = $reserva['horaInicio'];
-                                $horaFim = $reserva['horaFim'];
-                                $dataReserva = isset($_POST['dataReserva']) ? $_POST['dataReserva'] : date('Y-m-d');
-
-                                $sql = "INSERT INTO reserva (idSala, idUtilizador, dataReserva, horaInicio, horaFim) VALUES (?, ?, ?, ?, ?)";
-                                $stmt = $conn->prepare($sql);
-                                $stmt->bind_param("iisss", $idSala, $idUtilizador, $dataReserva, $horaInicio, $horaFim);
-
-                                if ($stmt->execute()) {
-                                    $response = ['success' => true];
-                                } else {
-                                    $response = ['success' => false];
-                                }
-                            }
-                        } else {
-                            $response = ['success' => false];
-                        }
-
-                        echo json_encode($response);
-                        exit();
-                    }
-                    ?>
                     var xhr = new XMLHttpRequest();
                     xhr.open("POST", window.location.href, true);
                     xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-                    
 
                     var data = new URLSearchParams();
                     data.append("idSala", "<?php echo $idSala; ?>");
                     var dataReservaSelecionada = document.getElementById('dataReserva').value;
                     data.append("dataReserva", dataReservaSelecionada);
                     data.append("reservas", JSON.stringify(horariosSelecionados));
+
+                    xhr.onload = function() {
+                        if (xhr.status === 200) {
+                            // Assuming the response is JSON and contains a success property
+                            var response = JSON.parse(xhr.responseText);
+                            if (response.success) {
+                                alert("Reserva realizada com sucesso!");
+                                // Reload the page to refresh the reservation table
+                                window.location.reload();
+                            } else {
+                                alert("Erro ao realizar a reserva. Tente novamente.");
+                            }
+                        } else {
+                            alert("Erro ao realizar a reserva. Tente novamente.");
+                        }
+                    };
+
                     xhr.send(data.toString());
                 }
             } else {

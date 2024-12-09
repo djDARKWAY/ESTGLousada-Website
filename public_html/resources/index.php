@@ -115,7 +115,7 @@ function getSalaImage($tipo)
         <div class="navbar-content">
             <div class="logo">
                 <img class="PPorto" src="media/logoPPorto.png">
-                Gestão de salas ESTG
+                <a href="index.php">Gestão de salas ESTG</a>
             </div>
 
             <div class="nav-links">
@@ -159,7 +159,9 @@ function getSalaImage($tipo)
                 <?php if ($autenticado): ?>
                     <div class="filter-group">
                         <label for="data">Data</label>
-                        <input type="date" id="data" onchange="applyFilters()">
+                        <input type="date" id="data" min="<?php echo date('Y-m-d', strtotime('+1 day')); ?>"
+                               value="<?php echo isset($_GET['data']) && $_GET['data'] >= date('Y-m-d', strtotime('+1 day')) ? $_GET['data'] : date('Y-m-d', strtotime('+1 day')); ?>"
+                               onchange="applyFilters()">
                     </div>
                 <?php endif; ?>
                 <div class="filter-group">
@@ -199,11 +201,28 @@ function getSalaImage($tipo)
         function applyFilters() {
             const tipo = document.getElementById('tipo').value;
             const capacidade = document.getElementById('capacidade').value;
+            const dataInput = document.getElementById('data');
+            const data = dataInput.value;
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            const selectedDate = new Date(data);
+
+            if (selectedDate <= today) {
+                alert("Você não pode selecionar uma data anterior a amanhã.");
+
+                const tomorrow = new Date();
+                tomorrow.setDate(today.getDate() + 1);
+                dataInput.value = tomorrow.toISOString().split('T')[0];
+                return;
+            }
 
             let url = window.location.pathname + "?";
 
             if (tipo) url += `tipo=${tipo}&`;
             if (capacidade) url += `capacidade=${capacidade}&`;
+            if (data) url += `data=${data}&`;
 
             url = url.endsWith('&') ? url.slice(0, -1) : url;
 

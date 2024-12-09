@@ -47,6 +47,17 @@ body {
     gap: 0.5rem;
 }
 
+.logo a {
+    color: white;
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    position: relative;
+    font-weight: 500;
+    font-size: 24px;
+    transition: color 0.3s ease;
+    z-index: 1;
+}
+
 .PPorto {
     width: 40px;
     height: auto;

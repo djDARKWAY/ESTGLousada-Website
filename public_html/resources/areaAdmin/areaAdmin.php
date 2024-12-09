@@ -77,6 +77,24 @@ $result = $stmt->get_result();
 </head>
 
 <body>
+<nav class="navbar">
+    <div class="navbar-content">
+        <div class="logo">
+            <img class="PPorto" src="../media/logoPPorto.png">
+            <a href="../index.php">Gestão de salas ESTG</a>
+        </div>
+
+        <div class="nav-links">
+            <?php
+            if ($_SESSION['cargo'] == 'Administrador') {
+                echo '<a href="areaAdmin.php">Área de administração</a>';
+                echo '<a href="../perfil/perfil.php">Perfil</a>';
+                echo '<a href="../logout.php">Logout</a>';
+            }
+            ?>
+        </div>
+    </div>
+</nav>
     <div class="container">
         <h1>Área de Administração</h1>
 
@@ -125,9 +143,9 @@ $result = $stmt->get_result();
                         </div>
                     </div>
                 </div>
+            </form>
                 <p>Gestão de utilizadores</p>
                 <button class="btn">Adicionar novo utilizador</button>
-            </form>
         </div>
 
         <table class="user-table">
@@ -167,7 +185,7 @@ $result = $stmt->get_result();
         // Função para aplicar os filtros quando a tecla 'Enter' for pressionada
         document.getElementById('filtersForm').addEventListener('keypress', function (event) {
             if (event.key === 'Enter') {
-                event.preventDefault(); // Previne o envio do formulário
+                event.preventDefault();
                 applyFilters();
             }
         });

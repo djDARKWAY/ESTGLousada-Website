@@ -90,6 +90,8 @@
                     echo "<p>As passwords não coincidem!</p>";
                 } else if (!preg_match('/^(255|91|92|93|96)[0-9]{7}$/', $contacto)) {
                     echo "<p>O número tem de começar por 255, 91, 92, 93 ou 96 e ter 9 dígitos.</p>";
+                }elseif (($_FILES['imagemPerfil']['size'] > 5000000)) {
+                    echo "<p>O tamanho da imagem não pode ser maior que 5MB!</p>";
                 } else {
                     // Processamento da imagem
                     $imagemPerfil = null;

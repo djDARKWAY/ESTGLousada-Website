@@ -1,54 +1,40 @@
 <?php
 session_start();
-if (!isset($_SESSION['idUtilizador'])) {
-    header('Location: ../login/login.php');
-    exit();
-}
-
 require_once '../conexao.php';
-$conn = getDatabaseConnection();
-$idUtilizador = $_SESSION['idUtilizador'];
 
-// Obter os dados do utilizador
+$conn = getDatabaseConnection();
+$id = $_GET['id'];
+
 $sql = "SELECT * FROM utilizador WHERE idUtilizador = ?";
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $idUtilizador);
+$stmt->bind_param("i", $id);
 $stmt->execute();
 $result = $stmt->get_result();
 $utilizador = $result->fetch_assoc();
 
-// Processar submissão do formulário
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nome = ($_POST['nome']);
     $username = trim(filter_var(strtolower($_POST['username']), FILTER_SANITIZE_STRING));
     $email = trim(filter_var(strtolower($_POST['email']), FILTER_SANITIZE_EMAIL));
     $contacto = trim(filter_var($_POST['contacto'], FILTER_SANITIZE_STRING));
-    $confirmarPassword = $_POST['confirmarPassword'];
+    $cargo = $_POST['cargo'];
 
     // Verificar se o email já existe para outro utilizador
     $checkSql = "SELECT idUtilizador FROM utilizador WHERE email = ? AND idUtilizador != ?";
     $stmtCheck = $conn->prepare($checkSql);
-    $stmtCheck->bind_param("si", $email, $idUtilizador);
+    $stmtCheck->bind_param("si", $email, $id);
     $stmtCheck->execute();
     $checkResult = $stmtCheck->get_result();
 
     // Verificação de username
     $checkUsernameSql = "SELECT idUtilizador FROM utilizador WHERE username = ? AND idUtilizador != ?";
     $stmtCheckUsername = $conn->prepare($checkUsernameSql);
-    $stmtCheckUsername->bind_param("si", $username, $idUtilizador);
+    $stmtCheckUsername->bind_param("si", $username, $id);
     $stmtCheckUsername->execute();
     $checkUsernameResult = $stmtCheckUsername->get_result();
-
-    // Verificar a palavra-passe
-    $salt = $utilizador['salt'];
-    $hashedPassword = $utilizador['password'];
     $imagemPerfil = $utilizador['imagemPerfil'];
 
-    if (empty($confirmarPassword)) {
-        $erro = "Por favor, insira a sua palavra-passe!";
-    } elseif (!password_verify($salt . $confirmarPassword, $hashedPassword)) {
-        $erro = "Palavra-passe incorreta!";
-    } elseif ($checkResult->num_rows > 0) {
+    if ($checkResult->num_rows > 0) {
         $erro = "Email já está a ser usado por outra conta!";
     } elseif ($checkUsernameResult->num_rows > 0) {
         $erro = "Username já está a ser usado!";
@@ -58,8 +44,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $erro = "Formato de email inválido!";
     } elseif (!preg_match('/^(255|91|92|93|96)[0-9]{7}$/', $contacto)) {
         $erro = "O número deve começar por 255, 91, 92, 93 ou 96 e ter 9 dígitos.";
-    }elseif (($_FILES['imagemPerfil']['size'] > 5000000)) {
-            $erro = "O tamanho da imagem não pode ser maior que 5MB!";
+    } elseif (($_FILES['imagemPerfil']['size'] > 5000000)) {
+        $erro = "O tamanho da imagem não pode ser maior que 5MB!";
     } else {
         if (isset($_FILES['imagemPerfil']) && $_FILES['imagemPerfil']['error'] == 0) {
             $imagemTipo = $_FILES['imagemPerfil']['type'];
@@ -70,43 +56,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
-        // Atualizar os dados do utilizador
-        $updateSql = "UPDATE utilizador SET username = ?, nome = ?, email = ?, contacto = ?, imagemPerfil = ? WHERE idUtilizador = ?";
-        $stmtUpdate = $conn->prepare($updateSql);
-        $stmtUpdate->bind_param("sssssi", $username, $nome, $email, $contacto, $imagemPerfil, $idUtilizador);
-
-        if ($stmtUpdate->execute()) {
-            $mensagem = "Informações atualizadas com sucesso!";
-        } else {
-            $erro = "Erro ao atualizar informações!";
-        }
+        $sql = "UPDATE utilizador SET nome = ?, username = ?, email = ?, contacto = ?, imagemPerfil = ?, cargo = ? WHERE idUtilizador = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("ssssssi", $nome, $username, $email, $contacto, $imagemPerfil, $cargo, $id);
+        $stmt->execute();
+        header('Location: areaAdmin.php');
+        exit();
     }
 }
 ?>
-
-
 <!DOCTYPE html>
-<html lang="pt-PT">
+<html lang="pt">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Perfil</title>
-    <link rel="stylesheet" href="perfil.css">
+    <title>Editar Utilizador</title>
+    <link rel="stylesheet" href="editarUtilizador.css">
 </head>
 
 <body>
     <div class="container">
-        <div class="perfil-box">
-            <?php if (isset($mensagem)): ?>
-                <p style="color:lightgreen; font-weight:bold;"><?php echo $mensagem; ?></p>
-            <?php endif; ?>
-            <?php if (isset($erro)): ?>
-                <p style="color:red; font-weight:bold;"><?php echo $erro; ?></p>
-            <?php endif; ?>
-
-            <form method="POST" action="" enctype="multipart/form-data">
-                <h1><?php echo htmlspecialchars($utilizador['username']); ?></h1>
+        <div class="register-box">
+            <h1>Editar Utilizador</h1>
+            <form method="POST" enctype="multipart/form-data">
                 <div class="imagemPerfil">
                     <?php
                     if ($utilizador['imagemPerfil']) {
@@ -117,30 +90,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     ?>
                 </div>
                 <input type="file" id="imagemPerfil" name="imagemPerfil" accept="image/png, image/jpeg">
-                <label for="nome">Nome:</label>
-                <input type="text" id="nome" name="nome" value="<?php echo htmlspecialchars($utilizador['nome']); ?>"
-                    required>
 
                 <label for="username">Utilizador:</label>
-                <input type="text" id="username" name="username"
-                    value="<?php echo htmlspecialchars($utilizador['username']); ?>" required>
+                <input type="text" id="username" name="username" required
+                    value="<?php echo $utilizador['username']; ?>">
+
+                <label for="nome">Nome completo:</label>
+                <input type="text" id="nome" name="nome" required
+                    value="<?php echo $utilizador['nome']; ?>">
 
                 <label for="email">Email:</label>
-                <input type="email" id="email" name="email"
-                    value="<?php echo htmlspecialchars($utilizador['email']); ?>" required>
+                <input type="email" id="email" name="email" required
+                    value="<?php echo $utilizador['email']; ?>">
 
                 <label for="contacto">Contacto:</label>
-                <input type="text" id="contacto" name="contacto"
-                    value="<?php echo htmlspecialchars($utilizador['contacto']); ?>" required>
+                <input type="text" id="contacto" name="contacto" required
+                    value="<?php echo $utilizador['contacto']; ?>">
 
-                <label for="confirmarPassword">Validar palavra-passe:</label>
-                <input type="password" id="confirmarPassword" name="confirmarPassword">
+                <label for="cargo">Cargo:</label>
+                <select id="cargo" name="cargo">
+                    <option value="Professor" <?php echo $utilizador['cargo'] === 'Professor' ? 'selected' : ''; ?>>Professor</option>
+                    <option value="Administrador" <?php echo $utilizador['cargo'] === 'Administrador' ? 'selected' : ''; ?>>Administrador</option>
+                </select>
 
-                <button type="submit">Guardar alterações</button>
-
-                <button type="button" class="buttonSec" onclick="window.location.href='alterarPassword.php'">Alterar palavra-passe</button>
-
-                <a class="voltar" href="../index.php">◄ Voltar</a>
+                <button type="submit" name="submit">Editar</button>
             </form>
         </div>
     </div>

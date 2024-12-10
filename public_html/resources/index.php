@@ -81,6 +81,41 @@ if ($resultTipos->num_rows > 0) {
     }
 }
 
+function verificarDisponibilidade($idSala, $conn)
+{
+    // Define o total de horas disponíveis no dia
+    $totalHorasDia = 16;
+    $dataFiltro = isset($_GET['data']) ? $_GET['data'] : '';
+
+    // Seleciona todas as reservas confirmadas para a data fornecida
+    $sql = "SELECT horaInicio, horaFim FROM reserva 
+            WHERE idSala = ? 
+              AND estado = 'Confirmada'
+              AND dataReserva = ?
+              AND (
+                  (horaInicio < horaFim)  -- Garantir que a reserva não seja inválida
+              )";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("ss", $idSala, $dataFiltro);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    $totalHorasReservadas = 0;
+
+    // Calcula o total de horas reservadas
+    while ($row = $result->fetch_assoc()) {
+        // Calcula a duração da reserva em horas
+        $inicio = strtotime($row['horaInicio']);
+        $fim = strtotime($row['horaFim']);
+        $duracaoHoras = ($fim - $inicio) / 3600; // Converte segundos para horas
+        $totalHorasReservadas += $duracaoHoras;
+    }
+
+    // Verifica a disponibilidade
+    $horasDisponiveis = $totalHorasDia - $totalHorasReservadas;
+    return $horasDisponiveis > 0 ? 'DISPONÍVEL' : 'INDISPONÍVEL';
+}
+
 function getSalaImage($tipo)
 {
     $imagens = [
@@ -160,8 +195,8 @@ function getSalaImage($tipo)
                     <div class="filter-group">
                         <label for="data">Data</label>
                         <input type="date" id="data" min="<?php echo date('Y-m-d', strtotime('+1 day')); ?>"
-                               value="<?php echo isset($_GET['data']) && $_GET['data'] >= date('Y-m-d', strtotime('+1 day')) ? $_GET['data'] : date('Y-m-d', strtotime('+1 day')); ?>"
-                               onchange="applyFilters()">
+                            value="<?php echo isset($_GET['data']) && $_GET['data'] >= date('Y-m-d', strtotime('+1 day')) ? $_GET['data'] : date('Y-m-d', strtotime('+1 day')); ?>"
+                            onchange="applyFilters()">
                     </div>
                 <?php endif; ?>
                 <div class="filter-group">
@@ -184,11 +219,22 @@ function getSalaImage($tipo)
                             </div>
                             <?php if ($autenticado): ?>
                                 <div class="status">
-                                    (Disponibilidade)
+                                    <?php
+                                    $estado = verificarDisponibilidade($sala['idSala'], $conn);
+                                    echo $estado;
+                                    ?>
                                 </div>
-                                <a href="../reservarSala/reservarSala.php?idSala=<?php echo $sala['idSala']; ?>" class="btn reservar-btn">
-                                    Reservar
-                                </a>
+                                <?php if ($_SESSION['cargo'] == 'Administrador'): ?>
+                                    <a href="../areaAdmin/editarSala.php?idSala=<?php echo $sala['idSala']; ?>"
+                                        class="btn reservar-btn">
+                                        Editar
+                                    </a>
+                                <?php else: ?>
+                                    <a href="../reservarSala/reservarSala.php?idSala=<?php echo $sala['idSala']; ?>"
+                                        class="btn reservar-btn">
+                                        Reservar
+                                    </a>
+                                <?php endif; ?>
                             <?php endif; ?>
                         </div>
                     </div>

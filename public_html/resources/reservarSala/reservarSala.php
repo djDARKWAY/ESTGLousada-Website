@@ -39,6 +39,7 @@ if (!isset($_GET['idSala']) || empty($_GET['idSala'])) {
 }
 
 $idSala = $_GET['idSala'];
+$dataReserva = $_GET['dataReserva'] ?? date('Y-m-d');
 
 // Obter detalhes da sala
 $sql = "SELECT idSala, nome, tipo, descricao, capacidade, estado FROM sala WHERE idSala = ?";
@@ -53,13 +54,13 @@ if ($result->num_rows === 0) {
 
 $sala = $result->fetch_assoc();
 
-// Obter data da reserva
-$dataReserva = $_GET['dataReserva'] ?? date('Y-m-d', strtotime('+1 day'));
 
-// Validar se a data da reserva é válida
-//if (strtotime($dataReserva) < strtotime('+1 day')) {
-//    die("Data inválida. Você não pode reservar uma sala para hoje ou uma data passada.");
-//}
+
+
+
+
+
+
 
 // Obter reservas para a data selecionada
 $sqlReservas = "SELECT TIME_FORMAT(horaInicio, '%H:%i') AS horaInicio, TIME_FORMAT(horaFim, '%H:%i') AS horaFim FROM reserva WHERE idSala = ? AND dataReserva = ?";
@@ -149,7 +150,8 @@ function getSalaImage($tipo)
         <div class="reservations">
             <div class="date-picker">
                 <label for="dataReserva">Data:</label>
-                <input type="date" id="dataReserva" value="<?php echo $dataReserva; ?>" min="<?php echo date('Y-m-d', strtotime('+1 day')); ?>" onchange="updateDataReserva()">
+                <input type="date" id="dataReserva" value="<?php echo $dataReserva; ?>"
+                    min="<?php echo date('Y-m-d', strtotime('+1 day')); ?>" onchange="updateDataReserva()">
             </div>
 
             <div class="table-container">
@@ -257,7 +259,7 @@ function getSalaImage($tipo)
                 var horaInicio = "";
                 var horaFim = "";
 
-                checkboxes.forEach(function(checkbox, index) {
+                checkboxes.forEach(function (checkbox, index) {
                     var hora = checkbox.getAttribute('data-hora');
                     if (horaInicio === "") {
                         horaInicio = hora;
@@ -284,7 +286,7 @@ function getSalaImage($tipo)
                     data.append("dataReserva", dataReservaSelecionada);
                     data.append("reservas", JSON.stringify(horariosSelecionados));
 
-                    xhr.onload = function() {
+                    xhr.onload = function () {
                         if (xhr.status === 200) {
                             // Assuming the response is JSON and contains a success property
                             var response = JSON.parse(xhr.responseText);

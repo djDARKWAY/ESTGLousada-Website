@@ -58,8 +58,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $erro = "Formato de email inválido!";
     } elseif (!preg_match('/^(255|91|92|93|96)[0-9]{7}$/', $contacto)) {
         $erro = "O número deve começar por 255, 91, 92, 93 ou 96 e ter 9 dígitos.";
-    }elseif (($_FILES['imagemPerfil']['size'] > 5000000)) {
-            $erro = "O tamanho da imagem não pode ser maior que 5MB!";
     } else {
         if (isset($_FILES['imagemPerfil']) && $_FILES['imagemPerfil']['error'] == 0) {
             $imagemTipo = $_FILES['imagemPerfil']['type'];
@@ -106,7 +104,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php endif; ?>
 
             <form method="POST" action="" enctype="multipart/form-data">
-                <h1><?php echo htmlspecialchars($utilizador['username']); ?></h1>
+                <h1><?php echo htmlspecialchars($utilizador['nome']); ?></h1>
                 <div class="imagemPerfil">
                     <?php
                     if ($utilizador['imagemPerfil']) {
@@ -138,7 +136,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 <button type="submit">Guardar alterações</button>
 
-                <button type="button" class="buttonSec" onclick="window.location.href='alterarPassword.php'">Alterar palavra-passe</button>
+                <button type="button" class="buttonSec" onclick="window.location.href='alterarPassword.php'">Alterar
+                    palavra-passe</button>
 
                 <a class="voltar" href="../index.php">◄ Voltar</a>
             </form>

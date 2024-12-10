@@ -8,7 +8,6 @@ $conn = getDatabaseConnection();
 
 // Verificar se o utilizador está autenticado via sessão ou cookie
 $autenticado = false;
-
 if (isset($_SESSION['cargo'])) {
     $autenticado = true;
 } elseif (isset($_COOKIE['remember_me'])) {

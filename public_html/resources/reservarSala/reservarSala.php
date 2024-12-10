@@ -54,14 +54,6 @@ if ($result->num_rows === 0) {
 
 $sala = $result->fetch_assoc();
 
-
-
-
-
-
-
-
-
 // Obter reservas para a data selecionada
 $sqlReservas = "SELECT TIME_FORMAT(horaInicio, '%H:%i') AS horaInicio, TIME_FORMAT(horaFim, '%H:%i') AS horaFim FROM reserva WHERE idSala = ? AND dataReserva = ?";
 $stmtReservas = $conn->prepare($sqlReservas);
@@ -102,7 +94,6 @@ function getSalaImage($tipo)
     return $imagens[$tipo] ?? '../media/salaDefault.png';
 }
 ?>
-
 
 <!DOCTYPE html>
 <html lang="pt-PT">

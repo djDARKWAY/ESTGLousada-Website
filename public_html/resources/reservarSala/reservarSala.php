@@ -14,10 +14,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $horaInicio = $reserva['horaInicio'];
             $horaFim = $reserva['horaFim'];
             $dataReserva = isset($_POST['dataReserva']) ? $_POST['dataReserva'] : date('Y-m-d');
+            $estado = "Confirmada";
 
-            $sql = "INSERT INTO reserva (idSala, idUtilizador, dataReserva, horaInicio, horaFim) VALUES (?, ?, ?, ?, ?)";
+            $sql = "INSERT INTO reserva (idSala, idUtilizador, dataReserva, horaInicio, horaFim, estado) VALUES (?, ?, ?, ?, ?, ?)";
             $stmt = $conn->prepare($sql);
-            $stmt->bind_param("iisss", $idSala, $idUtilizador, $dataReserva, $horaInicio, $horaFim);
+            $stmt->bind_param("iissss", $idSala, $idUtilizador, $dataReserva, $horaInicio, $horaFim, $estado);
 
             if ($stmt->execute()) {
                 $response = ['success' => true];
@@ -39,7 +40,7 @@ if (!isset($_GET['idSala']) || empty($_GET['idSala'])) {
 }
 
 $idSala = $_GET['idSala'];
-$dataReserva = $_GET['dataReserva'] ?? date('Y-m-d');
+$dataReserva = isset($_GET['dataReserva']) ? $_GET['dataReserva'] : date('Y-m-d');
 
 // Obter detalhes da sala
 $sql = "SELECT idSala, nome, tipo, descricao, capacidade, estado FROM sala WHERE idSala = ?";

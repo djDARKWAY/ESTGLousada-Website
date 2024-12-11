@@ -92,7 +92,7 @@ function verificarDisponibilidade($idSala, $conn)
               AND estado = 'Confirmada'
               AND dataReserva = ?
               AND (
-                  (horaInicio < horaFim)  -- Garantir que a reserva não seja inválida
+                  (horaInicio < horaFim) 
               )";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("ss", $idSala, $dataFiltro);
@@ -229,7 +229,7 @@ function getSalaImage($tipo)
                                         Editar
                                     </a>
                                 <?php else: ?>
-                                    <a href="../reservarSala/reservarSala.php?idSala=<?php echo $sala['idSala']; ?>"
+                                    <a href="../reservarSala/reservarSala.php?idSala=<?php echo $sala['idSala']; ?>&dataReserva=<?php echo isset($_GET['data']) ? $_GET['data'] : ''; ?>"
                                         class="btn reservar-btn">
                                         Reservar
                                     </a>

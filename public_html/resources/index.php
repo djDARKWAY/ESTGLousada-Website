@@ -30,6 +30,16 @@ if (isset($_SESSION['cargo'])) {
     }
 }
 
+// Eliminar sala
+if (isset($_GET['eliminarSala'])) {
+    $idSala = (int) $_GET['eliminarSala'];
+    $stmt = $conn->prepare("DELETE FROM sala WHERE idSala = ?");
+    $stmt->bind_param("i", $idSala);
+    $stmt->execute();
+    header("Location: " . $_SERVER['PHP_SELF']);
+    exit();
+}
+
 // Receber os parâmetros dos filtros
 $tipoFiltro = isset($_GET['tipo']) ? $_GET['tipo'] : '';
 $capacidadeFiltro = isset($_GET['capacidade']) ? $_GET['capacidade'] : '';
@@ -84,7 +94,7 @@ function verificarDisponibilidade($idSala, $conn)
 {
     // Define o total de horas disponíveis no dia
     $totalHorasDia = 16;
-    $dataFiltro = isset($_GET['data']) ? $_GET['data'] : '';
+    $dataFiltro = isset($_GET['data']) ? $_GET['data'] : date('Y-m-d', strtotime('+1 day'));
 
     // Seleciona todas as reservas confirmadas para a data fornecida
     $sql = "SELECT horaInicio, horaFim FROM reserva 
@@ -153,20 +163,24 @@ function getSalaImage($tipo)
             </div>
 
             <div class="nav-links">
-                <?php
-                if ($_SESSION['cargo'] == 'Administrador') {
-                    echo '<a href="areaAdmin/areaAdmin.php">Área de administração</a>';
-                    echo '<a href="perfil/perfil.php">Perfil</a>';
-                    echo '<a href="logout.php">Logout</a>';
-                } elseif ($_SESSION['cargo'] == 'Professor') {
-                    echo '<a href="perfil/perfil.php">Perfil</a>';
-                    echo '<a href="logout.php">Logout</a>';
-                } else {
-                    echo '<a href="login/login.php">Login</a>';
-                    echo '<a href="registar/registar.php">Registar</a>';
-                }
-                ?>
-            </div>
+            <?php if ($_SESSION['cargo'] == 'Administrador'): ?>
+                <div class="dropdown">
+                    <button class="dropdown-btn">Área de administração</button>
+                    <div class="dropdown-content">
+                        <a href="areaAdmin/areaAdmin.php">Utilizadores</a>
+                        <a href="areaAdmin/reservas.php">Reservas</a>
+                    </div>
+                </div>
+                <a href="perfil/perfil.php">Perfil</a>
+                <a href="logout.php">Logout</a>
+            <?php elseif ($_SESSION['cargo'] == 'Professor'): ?>
+                <a href="perfil/perfil.php">Perfil</a>
+                <a href="logout.php">Logout</a>
+            <?php else: ?>
+                <a href="login/login.php">Login</a>
+                <a href="registar/registar.php">Registar</a>
+            <?php endif; ?>
+        </div>
         </div>
     </nav>
 
@@ -220,16 +234,26 @@ function getSalaImage($tipo)
                                 <div class="status">
                                     <?php
                                     $estado = verificarDisponibilidade($sala['idSala'], $conn);
-                                    echo $estado;
+                                    if ($estado === 'DISPONÍVEL') {
+                                        echo '<span style="color: green;">' . $estado . '</span>';
+                                    } elseif ($estado === 'INDISPONÍVEL') {
+                                        echo '<span style="color: red;">' . $estado . '</span>';
+                                    } elseif ($estado === 'BREVEMENTE') {
+                                        echo '<span style="color: orange;">' . $estado . '</span>';
+                                    }
                                     ?>
                                 </div>
                                 <?php if ($_SESSION['cargo'] == 'Administrador'): ?>
                                     <a href="../areaAdmin/editarSala.php?idSala=<?php echo $sala['idSala']; ?>"
-                                        class="btn reservar-btn">
+                                        class="btn editar-btn">
                                         Editar
                                     </a>
+                                    <a class="btn eliminar-btn" href="?eliminarSala=<?php echo $sala['idSala']; ?>"
+                                        onclick="return confirm('Tem a certeza que deseja eliminar esta sala?')">
+                                        Eliminar
+                                    </a>
                                 <?php else: ?>
-                                    <a href="../reservarSala/reservarSala.php?idSala=<?php echo $sala['idSala']; ?>&dataReserva=<?php echo isset($_GET['data']) ? $_GET['data'] : ''; ?>"
+                                    <a href="../reservarSala/reservarSala.php?idSala=<?php echo $sala['idSala']; ?>&dataReserva=<?php echo isset($_GET['data']) ? $_GET['data'] : date('Y-m-d', strtotime('+1 day')); ?>"
                                         class="btn reservar-btn">
                                         Reservar
                                     </a>

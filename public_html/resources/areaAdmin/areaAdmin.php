@@ -77,24 +77,28 @@ $result = $stmt->get_result();
 </head>
 
 <body>
-<nav class="navbar">
-    <div class="navbar-content">
-        <div class="logo">
-            <img class="PPorto" src="../media/logoPPorto.png">
-            <a href="../index.php">Gestão de salas ESTG</a>
-        </div>
+    <nav class="navbar">
+        <div class="navbar-content">
+            <div class="logo">
+                <img class="PPorto" src="../media/logoPPorto.png">
+                <a href="../index.php">Gestão de salas ESTG</a>
+            </div>
 
-        <div class="nav-links">
-            <?php
-            if ($_SESSION['cargo'] == 'Administrador') {
-                echo '<a href="areaAdmin.php">Área de administração</a>';
-                echo '<a href="../perfil/perfil.php">Perfil</a>';
-                echo '<a href="../logout.php">Logout</a>';
-            }
-            ?>
+            <div class="nav-links">
+                <?php if ($_SESSION['cargo'] == 'Administrador'): ?>
+                    <div class="dropdown">
+                        <button class="dropdown-btn">Área de administração</button>
+                        <div class="dropdown-content">
+                            <a href="../areaAdmin/areaAdmin.php">Utilizadores</a>
+                            <a href="../areaAdmin/reservas.php">Reservas</a>
+                        </div>
+                    </div>
+                    <a href="../perfil/perfil.php">Perfil</a>
+                    <a href="../logout.php">Logout</a>
+                <?php endif; ?>
+            </div>
         </div>
-    </div>
-</nav>
+    </nav>
     <div class="container">
         <h1>Área de Administração</h1>
 
@@ -144,8 +148,8 @@ $result = $stmt->get_result();
                     </div>
                 </div>
             </form>
-                <p>Gestão de utilizadores</p>
-                <button class="btn">Adicionar novo utilizador</button>
+            <p>Gestão de utilizadores</p>
+            <button class="btn">Adicionar novo utilizador</button>
         </div>
 
         <table class="user-table">

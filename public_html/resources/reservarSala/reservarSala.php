@@ -135,7 +135,6 @@ function getSalaImage($tipo)
                 <p><strong>Tipo:</strong> <?php echo htmlspecialchars($sala['tipo']); ?></p>
                 <p><strong>Capacidade:</strong> <?php echo htmlspecialchars($sala['capacidade']); ?></p>
                 <p><strong>Descrição:</strong> <?php echo htmlspecialchars($sala['descricao']); ?></p>
-                <p><strong>Estado:</strong> <?php echo htmlspecialchars($sala['estado']); ?></p>
             </div>
         </div>
 

@@ -62,11 +62,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <!DOCTYPE html>
 <html lang="pt">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Editar Sala</title>
+    <link rel="stylesheet" href="editarSala.css">
 </head>
+
 <body>
     <h1>Editar Sala</h1>
 
@@ -97,7 +100,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <textarea id="descricao" name="descricao"><?php echo htmlspecialchars($sala['descricao']); ?></textarea><br>
 
         <label for="capacidade">Capacidade:</label>
-        <input type="number" id="capacidade" name="capacidade" value="<?php echo htmlspecialchars($sala['capacidade']); ?>"><br>
+        <input type="number" id="capacidade" name="capacidade"
+            value="<?php echo htmlspecialchars($sala['capacidade']); ?>"><br>
 
         <label for="estado">Estado:</label>
         <select id="estado" name="estado" required>
@@ -113,4 +117,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <button type="submit">Atualizar</button>
     </form>
 </body>
+
 </html>

@@ -168,7 +168,7 @@ function getSalaImage($tipo)
                     <button class="dropdown-btn">Área de administração</button>
                     <div class="dropdown-content">
                         <a href="areaAdmin/areaAdmin.php">Utilizadores</a>
-                        <a href="areaAdmin/reservas.php">Reservas</a>
+                        <a href="areaAdmin/reserva.php">Reservas</a>
                     </div>
                 </div>
                 <a href="perfil/perfil.php">Perfil</a>

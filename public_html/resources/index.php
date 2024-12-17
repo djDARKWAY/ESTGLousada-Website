@@ -13,20 +13,22 @@ if (isset($_SESSION['cargo'])) {
 } elseif (isset($_COOKIE['remember_me'])) {
     $rememberMeToken = $_COOKIE['remember_me'];
 
-    $sql = "SELECT idUtilizador, cargo, nome FROM utilizador WHERE rememberToken = ?";
+    $sql = "SELECT idUtilizador, cargo, nome, rememberToken FROM utilizador WHERE rememberToken IS NOT NULL";
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("s", $rememberMeToken);
     $stmt->execute();
     $result = $stmt->get_result();
 
-    if ($result->num_rows > 0) {
-        $user = $result->fetch_assoc();
+    while ($user = $result->fetch_assoc()) {
 
-        // Configurar a sessão com os dados do utilizador
-        $_SESSION['idUtilizador'] = $user['idUtilizador'];
-        $_SESSION['cargo'] = $user['cargo'];
-        $_SESSION['nome'] = $user['nome'];
-        $autenticado = true;
+        if (password_verify($rememberMeToken, $user['rememberToken'])) {
+            // Configurar a sessão
+            session_start();
+            $_SESSION['idUtilizador'] = $user['idUtilizador'];
+            $_SESSION['cargo'] = $user['cargo'];
+            $_SESSION['nome'] = $user['nome'];
+            $autenticado = true;
+            break;
+        }
     }
 }
 
@@ -142,7 +144,41 @@ function getSalaImage($tipo)
     ];
     return isset($imagens[$tipo]) ? $imagens[$tipo] : 'media/salaDefault.png';
 }
+
+// Definir o número de salas por página
+$salasPorPagina = 10;
+$paginaAtual = isset($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
+$offset = ($paginaAtual - 1) * $salasPorPagina;
+
+// Adicionar limite e offset à query
+$sql .= " LIMIT ? OFFSET ?";
+$stmt = $conn->prepare($sql);
+
+// Verificar se os parâmetros existem e associá-los corretamente
+if ($tipoFiltro && $tipoFiltro !== '' && $capacidadeFiltro) {
+    $stmt->bind_param("siii", $tipoFiltro, $capacidadeFiltro, $salasPorPagina, $offset);
+} elseif ($tipoFiltro && $tipoFiltro !== '') {
+    $stmt->bind_param("sii", $tipoFiltro, $salasPorPagina, $offset);
+} elseif ($capacidadeFiltro) {
+    $stmt->bind_param("iii", $capacidadeFiltro, $salasPorPagina, $offset);
+} else {
+    $stmt->bind_param("ii", $salasPorPagina, $offset);
+}
+
+// Executar a query
+$stmt->execute();
+$result = $stmt->get_result();
+$salas = [];
+if ($result->num_rows > 0) {
+    while ($row = $result->fetch_assoc()) {
+        $salas[] = $row;
+    }
+}
 ?>
+<script>
+
+</script>
+
 
 <!DOCTYPE html>
 <html lang="pt-PT">
@@ -163,24 +199,24 @@ function getSalaImage($tipo)
             </div>
 
             <div class="nav-links">
-            <?php if ($_SESSION['cargo'] == 'Administrador'): ?>
-                <div class="dropdown">
-                    <button class="dropdown-btn">Área de administração</button>
-                    <div class="dropdown-content">
-                        <a href="areaAdmin/areaAdmin.php">Utilizadores</a>
-                        <a href="areaAdmin/reserva.php">Reservas</a>
+                <?php if ($_SESSION['cargo'] == 'Administrador'): ?>
+                    <div class="dropdown">
+                        <button class="dropdown-btn">Área de administração</button>
+                        <div class="dropdown-content">
+                            <a href="areaAdmin/areaAdmin.php">Utilizadores</a>
+                            <a href="areaAdmin/reserva.php">Reservas</a>
+                        </div>
                     </div>
-                </div>
-                <a href="perfil/perfil.php">Perfil</a>
-                <a href="logout.php">Logout</a>
-            <?php elseif ($_SESSION['cargo'] == 'Professor'): ?>
-                <a href="perfil/perfil.php">Perfil</a>
-                <a href="logout.php">Logout</a>
-            <?php else: ?>
-                <a href="login/login.php">Login</a>
-                <a href="registar/registar.php">Registar</a>
-            <?php endif; ?>
-        </div>
+                    <a href="perfil/perfil.php">Perfil</a>
+                    <a href="logout.php">Logout</a>
+                <?php elseif ($_SESSION['cargo'] == 'Professor'): ?>
+                    <a href="perfil/perfil.php">Perfil</a>
+                    <a href="logout.php">Logout</a>
+                <?php else: ?>
+                    <a href="login/login.php">Login</a>
+                    <a href="registar/registar.php">Registar</a>
+                <?php endif; ?>
+            </div>
         </div>
     </nav>
 
@@ -267,6 +303,47 @@ function getSalaImage($tipo)
     </main>
 
     <script>
+        let paginaAtual = <?php echo $paginaAtual; ?>;
+        const salasPorPagina = <?php echo $salasPorPagina; ?>;
+        let carregando = false;
+
+        window.addEventListener('scroll', () => {
+            if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 500 && !carregando) {
+                carregando = true;
+                paginaAtual++;
+                carregarMaisSalas();
+            }
+        });
+
+        function carregarMaisSalas() {
+            const tipo = document.getElementById('tipo').value;
+            const capacidade = document.getElementById('capacidade').value;
+            const data = document.getElementById('data') ? document.getElementById('data').value : '';
+
+            let url = window.location.pathname + "?pagina=" + paginaAtual + "&";
+
+            if (tipo) url += `tipo=${tipo}&`;
+            if (capacidade) url += `capacidade=${capacidade}&`;
+            if (data) url += `data=${data}&`;
+
+            url = url.endsWith('&') ? url.slice(0, -1) : url;
+
+            fetch(url)
+                .then(response => response.text())
+                .then(data => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(data, 'text/html');
+                    const novasSalas = doc.querySelectorAll('.card');
+                    const grid = document.querySelector('.grid');
+                    novasSalas.forEach(sala => grid.appendChild(sala));
+                    carregando = false;
+                })
+                .catch(error => {
+                    console.error('Erro ao carregar mais salas:', error);
+                    carregando = false;
+                });
+        }
+
         function applyFilters() {
             const tipo = document.getElementById('tipo').value;
             const capacidade = document.getElementById('capacidade').value;

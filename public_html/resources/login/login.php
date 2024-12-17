@@ -61,13 +61,18 @@
 
                 // Verifica se o utilizador pediu para manter a sessão
                 if (isset($_POST['remember'])) {
+                    // Gerar um token aleatório
                     $token = bin2hex(random_bytes(16));
-                    setcookie('remember_me', $token, time() + (1 * 24 * 60 * 60), "/");
-
+                    $hashedToken = password_hash($token, PASSWORD_DEFAULT); // Hashear o token
+    
+                    // Armazenar o token hasheado na base de dados
                     $update_token = "UPDATE utilizador SET rememberToken = ? WHERE idUtilizador = ?";
                     $stmt_update = $conn->prepare($update_token);
-                    $stmt_update->bind_param("si", $token, $utilizador['idUtilizador']);
+                    $stmt_update->bind_param("si", $hashedToken, $utilizador['idUtilizador']);
                     $stmt_update->execute();
+    
+                    // Configurar o cookie com o token não-hasheado
+                    setcookie('remember_me', $token, time() + (1 * 24 * 60 * 60), "/");
                 }
                 echo "<script>window.location.href = '../index.php';</script>";
             } else {

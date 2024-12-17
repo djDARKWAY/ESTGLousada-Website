@@ -102,12 +102,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     value="<?php echo $utilizador['username']; ?>">
 
                 <label for="nome">Nome completo:</label>
-                <input type="text" id="nome" name="nome" required
-                    value="<?php echo $utilizador['nome']; ?>">
+                <input type="text" id="nome" name="nome" required value="<?php echo $utilizador['nome']; ?>">
 
                 <label for="email">Email:</label>
-                <input type="email" id="email" name="email" required
-                    value="<?php echo $utilizador['email']; ?>">
+                <input type="email" id="email" name="email" required value="<?php echo $utilizador['email']; ?>">
 
                 <label for="contacto">Contacto:</label>
                 <input type="text" id="contacto" name="contacto" required
@@ -115,11 +113,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 <label for="cargo">Cargo:</label>
                 <select id="cargo" name="cargo">
-                    <option value="Professor" <?php echo $utilizador['cargo'] === 'Professor' ? 'selected' : ''; ?>>Professor</option>
+                    <option value="Professor" <?php echo $utilizador['cargo'] === 'Professor' ? 'selected' : ''; ?>>
+                        Professor</option>
                     <option value="Administrador" <?php echo $utilizador['cargo'] === 'Administrador' ? 'selected' : ''; ?>>Administrador</option>
                 </select>
 
                 <button type="submit" name="submit">Editar</button>
+
+                <a class="voltar" href="../index.php">◄ Voltar</a>
             </form>
         </div>
     </div>

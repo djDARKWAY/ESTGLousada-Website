@@ -90,17 +90,16 @@ $result = $stmt->get_result();
                         <button class="dropdown-btn">Área de administração</button>
                         <div class="dropdown-content">
                             <a href="../areaAdmin/areaAdmin.php">Utilizadores</a>
-                            <a href="../areaAdmin/reservas.php">Reservas</a>
+                            <a href="../areaAdmin/reserva.php">Reservas</a>
                         </div>
-                    </div>
-                    <a href="../perfil/perfil.php">Perfil</a>
-                    <a href="../logout.php">Logout</a>
-                <?php endif; ?>
+                        <a href="../perfil/perfil.php">Perfil</a>
+                        <a href="../logout.php">Logout</a>
+                    <?php endif; ?>
+                </div>
             </div>
-        </div>
     </nav>
     <div class="container">
-        <h1>Área de Administração</h1>
+        <h1>Área de administração</h1>
 
         <div class="filters-container">
             <form method="GET" id="filtersForm">

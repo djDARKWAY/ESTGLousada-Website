@@ -13,7 +13,7 @@ if (!isset($_SESSION['cargo']) || $_SESSION['cargo'] !== 'Administrador') {
 // Eliminar reserva
 if (isset($_GET['eliminar'])) {
     $idReserva = (int) $_GET['eliminar'];
-    $stmt = $conn->prepare("DELETE FROM reserva WHERE id = ?");
+    $stmt = $conn->prepare("DELETE FROM reserva WHERE idReserva = ?");
     $stmt->bind_param("i", $idReserva);
     $stmt->execute();
     header("Location: " . $_SERVER['PHP_SELF']);
@@ -25,9 +25,9 @@ $params = [];
 $types = "";
 
 // Filtrar por ID da reserva
-if (!empty($_GET['id'])) {
-    $whereClauses[] = "reserva.id = ?";
-    $params[] = (int) $_GET['id'];
+if (!empty($_GET['idReserva'])) {
+    $whereClauses[] = "reserva.idReserva = ?";
+    $params[] = (int) $_GET['idReserva'];
     $types .= "i";
 }
 
@@ -100,7 +100,7 @@ $result = $stmt->get_result();
                     <button class="dropdown-btn">Área de administração</button>
                     <div class="dropdown-content">
                         <a href="../areaAdmin/areaAdmin.php">Utilizadores</a>
-                        <a href="../areaAdmin/reservas.php">Reservas</a>
+                        <a href="../areaAdmin/reserva.php">Reservas</a>
                     </div>
                 </div>
                 <a href="../perfil/perfil.php">Perfil</a>
@@ -111,7 +111,7 @@ $result = $stmt->get_result();
 </nav>
 
 <div class="container">
-    <h1>Área de Administração</h1>
+    <h1>Área de administração</h1>
 
     <div class="filters-container">
         <form method="GET" id="filtersForm">
@@ -119,8 +119,8 @@ $result = $stmt->get_result();
                 <p>Filtros de pesquisa</p>
                 <div class="filter-row">
                     <div class="filter-item">
-                        <label for="id">ID</label>
-                        <input type="text" name="id" value="<?php echo htmlspecialchars($_GET['id'] ?? ''); ?>">
+                        <label for="idReserva">ID</label>
+                        <input type="text" name="idReserva" value="<?php echo htmlspecialchars($_GET['idReserva'] ?? ''); ?>">
                     </div>
 
                     <div class="filter-item">
@@ -138,7 +138,7 @@ $result = $stmt->get_result();
                     <div class="date-filter">
                         <label for="dataReserva">Data</label>
                         <input type="date" name="dataReserva"
-                               value="<?php echo htmlspecialchars($_GET['dataReserva'] ?? ''); ?>">
+                               value="<?php echo htmlspecialchars($_GET['dataReserva'] ?? date('Y-m-d')); ?>">
                     </div>
 
                     <div class="filter-item">
@@ -167,7 +167,7 @@ $result = $stmt->get_result();
             <tbody>
                 <?php while ($reserva = $result->fetch_assoc()): ?>
                     <tr>
-                        <td><?php echo $reserva['id']; ?></td>
+                        <td><?php echo $reserva['idReserva']; ?></td>
                         <td><?php echo $reserva['username']; ?></td>
                         <td><?php echo $reserva['nomeSala']; ?></td>
                         <td><?php echo $reserva['dataReserva']; ?></td>
@@ -178,7 +178,7 @@ $result = $stmt->get_result();
                             <a class="btn btn-secondary"
                                href="editarUtilizador.php?id=<?php echo $reserva['idUtilizador']; ?>">Editar</a>
                             <a class="btn"
-                               href="?eliminar=<?php echo $reserva['id']; ?>"
+                               href="?eliminar=<?php echo $reserva['idReserva']; ?>"
                                onclick="return confirm('Tem a certeza que deseja eliminar?')">Eliminar</a>
                         </td>
                     </tr>

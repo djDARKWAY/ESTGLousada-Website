@@ -1,3 +1,4 @@
+/* ==================== Globals ==================== */
 :root {
     --primary-color: #C94D24;
     --primary-light: #e65d2e;
@@ -8,6 +9,7 @@
     --border-color: #e2e8f0;
 }
 
+/* ==================== General Reset ==================== */
 * {
     margin: 0;
     padding: 0;
@@ -15,6 +17,7 @@
     font-family: 'Segoe UI', system-ui, sans-serif;
 }
 
+/* ==================== Body ==================== */
 body {
     background: var(--background-color);
     color: var(--text-color);
@@ -29,14 +32,16 @@ body {
     background-size: cover;
 }
 
+/* ==================== Header ==================== */
 h1 {
-    color: var(--primary-color);
+    color: var(--card-background);
     font-size: 2rem;
     margin-bottom: 20px;
     text-align: center;
     width: 100%;
 }
 
+/* ==================== Form Container ==================== */
 form {
     background: var(--card-background);
     padding: 20px;
@@ -47,6 +52,7 @@ form {
     border: 1px solid var(--border-color);
 }
 
+/* ==================== Label ==================== */
 label {
     display: block;
     font-weight: bold;
@@ -54,7 +60,11 @@ label {
     color: var(--text-color);
 }
 
-input, select, textarea, button {
+/* ==================== Form Inputs ==================== */
+input,
+select,
+textarea,
+button {
     width: 100%;
     padding: 10px;
     margin-bottom: 15px;
@@ -63,16 +73,16 @@ input, select, textarea, button {
     font-size: 1rem;
 }
 
-input:focus, select:focus, textarea:focus {
+/* ==================== Focus States ==================== */
+input:focus,
+select:focus,
+textarea:focus {
     outline: none;
     border-color: var(--primary-light);
     box-shadow: 0 0 5px rgba(201, 77, 36, 0.5);
 }
 
-textarea {
-    resize: vertical;
-}
-
+/* ==================== Button ==================== */
 button {
     background: var(--primary-color);
     color: #fff;
@@ -81,15 +91,18 @@ button {
     transition: background 0.3s ease;
 }
 
+/* ==================== Button Hover ==================== */
 button:hover {
     background: var(--primary-dark);
 }
 
+/* ==================== Paragraphs ==================== */
 p {
     margin-bottom: 15px;
     text-align: center;
 }
 
+/* ==================== Error and Success Messages ==================== */
 p[style*="color: red"] {
     color: red;
     font-weight: bold;

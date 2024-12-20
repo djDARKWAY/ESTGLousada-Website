@@ -210,6 +210,7 @@ if ($result->num_rows > 0) {
                     <a href="perfil/perfil.php">Perfil</a>
                     <a href="logout.php">Logout</a>
                 <?php elseif ($_SESSION['cargo'] == 'Professor'): ?>
+                    <a href="reservarSala/minhaReserva.php">Minhas Reservas</a>
                     <a href="perfil/perfil.php">Perfil</a>
                     <a href="logout.php">Logout</a>
                 <?php else: ?>
@@ -251,6 +252,9 @@ if ($result->num_rows > 0) {
                 <div class="filter-group">
                     <label>&nbsp;</label>
                     <button class="btn" onclick="resetFilters()">Limpar filtros</button>
+                    <?php if ($_SESSION['cargo'] == 'Administrador'): ?>
+                        <a href="areaAdmin/adicionarSala.php" class="btn">Adicionar Sala</a>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>

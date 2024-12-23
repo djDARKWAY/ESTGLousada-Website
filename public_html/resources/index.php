@@ -147,7 +147,7 @@ function getSalaImage($tipo)
 
 // Definir o número de salas por página
 $salasPorPagina = 10;
-$paginaAtual = isset($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
+$paginaAtual = isset($_GET['pagina']) ? (int) $_GET['pagina'] : 1;
 $offset = ($paginaAtual - 1) * $salasPorPagina;
 
 // Adicionar limite e offset à query
@@ -191,35 +191,7 @@ if ($result->num_rows > 0) {
 </head>
 
 <body>
-    <nav class="navbar">
-        <div class="navbar-content">
-            <div class="logo">
-                <img class="PPorto" src="media/logoPPorto.png">
-                <a href="index.php">Gestão de salas ESTG</a>
-            </div>
-
-            <div class="nav-links">
-                <?php if ($_SESSION['cargo'] == 'Administrador'): ?>
-                    <div class="dropdown">
-                        <button class="dropdown-btn">Área de administração</button>
-                        <div class="dropdown-content">
-                            <a href="areaAdmin/areaAdmin.php">Utilizadores</a>
-                            <a href="areaAdmin/reserva.php">Reservas</a>
-                        </div>
-                    </div>
-                    <a href="perfil/perfil.php">Perfil</a>
-                    <a href="logout.php">Logout</a>
-                <?php elseif ($_SESSION['cargo'] == 'Professor'): ?>
-                    <a href="reservarSala/minhaReserva.php">Minhas Reservas</a>
-                    <a href="perfil/perfil.php">Perfil</a>
-                    <a href="logout.php">Logout</a>
-                <?php else: ?>
-                    <a href="login/login.php">Login</a>
-                    <a href="registar/registar.php">Registar</a>
-                <?php endif; ?>
-            </div>
-        </div>
-    </nav>
+    <?php include('header/header.php'); ?>
 
     <main class="container">
         <div class="filters">

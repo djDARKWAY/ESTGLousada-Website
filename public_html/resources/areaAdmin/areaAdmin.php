@@ -77,27 +77,8 @@ $result = $stmt->get_result();
 </head>
 
 <body>
-    <nav class="navbar">
-        <div class="navbar-content">
-            <div class="logo">
-                <img class="PPorto" src="../media/logoPPorto.png">
-                <a href="../index.php">Gestão de salas ESTG</a>
-            </div>
+    <?php include('../header/header.php'); ?>
 
-            <div class="nav-links">
-                <?php if ($_SESSION['cargo'] == 'Administrador'): ?>
-                    <div class="dropdown">
-                        <button class="dropdown-btn">Área de administração</button>
-                        <div class="dropdown-content">
-                            <a href="../areaAdmin/areaAdmin.php">Utilizadores</a>
-                            <a href="../areaAdmin/reserva.php">Reservas</a>
-                        </div>
-                        <a href="../perfil/perfil.php">Perfil</a>
-                        <a href="../logout.php">Logout</a>
-                    <?php endif; ?>
-                </div>
-            </div>
-    </nav>
     <div class="container">
         <h1>Área de administração</h1>
 

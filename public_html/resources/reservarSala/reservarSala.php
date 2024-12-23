@@ -112,23 +112,7 @@ function getSalaImage($tipo)
 </head>
 
 <body>
-    <nav class="navbar">
-        <div class="navbar-content">
-            <div class="logo">
-                <img class="PPorto" src="../media/logoPPorto.png">
-                Gestão de salas ESTG
-            </div>
-            <div class="nav-links">
-            <a href="minhaReserva.php">Minhas Reservas</a>
-                <?php if (isset($_SESSION['cargo'])): ?>
-                    <a href="/perfil/perfil.php">Perfil</a>
-                    <a href="/logout.php">Logout</a>
-                <?php else: ?>
-                    <a href="login/login.php">Login</a>
-                <?php endif; ?>
-            </div>
-        </div>
-    </nav>
+    <?php include('../header/header.php'); ?>
 
     <main class="container">
         <div class="room-details">

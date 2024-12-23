@@ -143,23 +143,7 @@ function getSalaImage($tipo)
 </head>
 
 <body>
-    <nav class="navbar">
-        <div class="navbar-content">
-            <div class="logo">
-                <img class="PPorto" src="../media/logoPPorto.png">
-                Gestão de salas ESTG
-            </div>
-            <div class="nav-links">
-                <a href="minhaReserva.php">Minhas Reservas</a>
-                <?php if (isset($_SESSION['cargo'])): ?>
-                    <a href="/perfil/perfil.php">Perfil</a>
-                    <a href="/logout.php">Logout</a>
-                <?php else: ?>
-                    <a href="login/login.php">Login</a>
-                <?php endif; ?>
-            </div>
-        </div>
-    </nav>
+    <?php include('header/header.php'); ?>
 
     <main class="container">
         <div class="room-details">
@@ -177,8 +161,7 @@ function getSalaImage($tipo)
         <div class="reservations">
             <div class="date-picker">
                 <label for="dataReserva">Data:</label>
-                <input type="date" id="dataReserva" value="<?php echo $dataReserva; ?>"
-                    disabled ?>
+                <input type="date" id="dataReserva" value="<?php echo $dataReserva; ?>" disabled ?>
             </div>
 
             <div class="table-container">
@@ -279,7 +262,7 @@ function getSalaImage($tipo)
                 var horaInicio = "";
                 var horaFim = "";
 
-                checkboxes.forEach(function(checkbox, index) {
+                checkboxes.forEach(function (checkbox, index) {
                     var hora = checkbox.getAttribute('data-hora');
                     if (horaInicio === "") horaInicio = hora; // Define o início
 
@@ -301,8 +284,8 @@ function getSalaImage($tipo)
                     confirm(
                         "Tem a certeza de que deseja reservar para as seguintes horas: " +
                         horariosSelecionados
-                        .map((r) => r.horaInicio + " - " + r.horaFim)
-                        .join(", ") +
+                            .map((r) => r.horaInicio + " - " + r.horaFim)
+                            .join(", ") +
                         "?"
                     )
                 ) {
@@ -319,7 +302,7 @@ function getSalaImage($tipo)
                     data.append("idSala", "<?php echo $idSala; ?>");
                     data.append("dataReserva", document.getElementById("dataReserva").value);
 
-                    xhr.onload = function() {
+                    xhr.onload = function () {
                         if (xhr.status === 200) {
                             var response = JSON.parse(xhr.responseText);
                             if (response.success) {

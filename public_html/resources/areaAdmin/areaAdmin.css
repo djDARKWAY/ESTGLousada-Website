@@ -23,63 +23,6 @@ body {
   line-height: 1.5;
 }
 
-/* ==================== Navbar ==================== */
-.navbar {
-  background-color: var(--primary-color);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
-
-.navbar a {
-  color: var(--card-background);
-  text-decoration: none;
-}
-
-.navbar-content {
-  max-width: 1200px;
-  margin: 0 auto;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem;
-}
-
-.logo {
-  font-size: 24px;
-  font-weight: 700;
-  color: white;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.nav-links {
-  display: flex;
-  gap: 1.5rem;
-  align-items: center;
-}
-
-.nav-links a {
-  color: white;
-  text-decoration: none;
-  padding: 0.5rem 1rem;
-  position: relative;
-  font-weight: 500;
-  font-size: 18px;
-  transition: color 0.3s ease;
-}
-
-.nav-links a:hover {
-  color: var(--primary-light);
-}
-
-.PPorto {
-  width: 40px;
-  height: auto;
-}
-
 /* ==================== Dropdown ==================== */
 .dropdown {
   position: relative;

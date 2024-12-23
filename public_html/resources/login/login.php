@@ -65,7 +65,7 @@
                     $token = bin2hex(random_bytes(16));
                     $hashedToken = password_hash($token, PASSWORD_DEFAULT); // Hashear o token
     
-                    // Armazenar o token hasheado na base de dados
+                    // Armazenar o token hashe na base de dados
                     $update_token = "UPDATE utilizador SET rememberToken = ? WHERE idUtilizador = ?";
                     $stmt_update = $conn->prepare($update_token);
                     $stmt_update->bind_param("si", $hashedToken, $utilizador['idUtilizador']);
@@ -76,10 +76,10 @@
                 }
                 echo "<script>window.location.href = '../index.php';</script>";
             } else {
-                echo "<p style='color:red;text-align:center;'>Erro: Password incorreta.</p>";
+                echo "<p style='color:red;text-align:center;'>Erro: Credenciais incorretas.</p>";
             }
         } else {
-            echo "<p style='color:red;text-align:center;'>Erro: Login não encontrado.</p>";
+            echo "<p style='color:red;text-align:center;'>Erro: Credenciais incorretas.</p>";
         }
     }
     ?>

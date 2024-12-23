@@ -98,6 +98,24 @@ function verificarDisponibilidade($idSala, $conn)
     $totalHorasDia = 16;
     $dataFiltro = isset($_GET['data']) ? $_GET['data'] : date('Y-m-d', strtotime('+1 day'));
 
+    // Seleciona o estado da sala diretamente da tabela sala
+    $sql = "SELECT estado FROM sala WHERE idSala = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $idSala);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($result->num_rows > 0) {
+        $row = $result->fetch_assoc();
+        $estadoSala = $row['estado'];
+
+        if ($estadoSala === 'Brevemente') {
+            return 'BREVEMENTE';
+        } elseif ($estadoSala === 'Indisponível') {
+            return 'INDISPONÍVEL';
+        }
+    }
+
     // Seleciona todas as reservas confirmadas para a data fornecida
     $sql = "SELECT horaInicio, horaFim FROM reserva 
             WHERE idSala = ? 
@@ -264,9 +282,14 @@ if ($result->num_rows > 0) {
                                         onclick="return confirm('Tem a certeza que deseja eliminar esta sala?')">
                                         Eliminar
                                     </a>
-                                <?php else: ?>
+                                <?php elseif ($estado === 'DISPONÍVEL'): ?>
                                     <a href="../reservarSala/reservarSala.php?idSala=<?php echo $sala['idSala']; ?>&dataReserva=<?php echo isset($_GET['data']) ? $_GET['data'] : date('Y-m-d', strtotime('+1 day')); ?>"
                                         class="btn reservar-btn">
+                                        Reservar
+                                    </a>
+                                <?php else : ?>
+                                    <a href="../reservarSala/reservarSala.php?idSala=<?php echo $sala['idSala']; ?>&dataReserva=<?php echo isset($_GET['data']) ? $_GET['data'] : date('Y-m-d', strtotime('+1 day')); ?>"
+                                        class="btn reservar-btn" style="background-color: grey; cursor: not-allowed;">
                                         Reservar
                                     </a>
                                 <?php endif; ?>

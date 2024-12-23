@@ -19,12 +19,11 @@ $idReserva = (int) $_GET['idReserva'];
 $idUtilizador = $_SESSION['idUtilizador'];
 
 // Verificar se a reserva pertence ao utilizador logado
-$sqlVerificaReserva = "SELECT idUtilizador FROM reserva WHERE idReserva = ?";
+$sqlVerificaReserva = "SELECT idUtilizador FROM reserva WHERE idReserva = ? AND dataReserva > CURDATE()";
 $stmtVerificaReserva = $conn->prepare($sqlVerificaReserva);
 $stmtVerificaReserva->bind_param("i", $idReserva);
 $stmtVerificaReserva->execute();
 $resultVerificaReserva = $stmtVerificaReserva->get_result();
-
 
 $reserva = $resultVerificaReserva->fetch_assoc();
 if ($reserva['idUtilizador'] !== $idUtilizador || $resultVerificaReserva->num_rows === 0) {
@@ -90,7 +89,7 @@ $dataReserva = $reserva['dataReserva']; // Data da reserva
 $stmtReserva->close();
 
 // Buscar horários reservados para a sala e data
-$sqlReservas = "SELECT TIME_FORMAT(horaInicio, '%H:%i') AS horaInicio, TIME_FORMAT(horaFim, '%H:%i') AS horaFim, idUtilizador 
+$sqlReservas = "SELECT TIME_FORMAT(horaInicio, '%H:%i') AS horaInicio, TIME_FORMAT(horaFim, '%H:%i') AS horaFim, idUtilizador, idReserva 
                 FROM reserva 
                 WHERE idSala = ? AND dataReserva = ?";
 $stmtReservas = $conn->prepare($sqlReservas);
@@ -103,9 +102,13 @@ while ($row = $reservasResult->fetch_assoc()) {
     $horaAtual = strtotime($row['horaInicio']);
     $horaFim = strtotime($row['horaFim']);
     $userId = $row['idUtilizador'];
+    $reservaId = $row['idReserva'];
 
     while ($horaAtual < $horaFim) {
-        $reservas[date('H:i', $horaAtual)] = $userId; // Associa o horário ao idUtilizador
+        $reservas[date('H:i', $horaAtual)] = [
+            'userId' => $userId,
+            'reservaId' => $reservaId
+        ];
         $horaAtual = strtotime("+1 hour", $horaAtual);
     }
 }
@@ -130,7 +133,6 @@ function getSalaImage($tipo)
     return $imagens[$tipo] ?? '../media/salaDefault.png';
 }
 ?>
-
 
 <!DOCTYPE html>
 <html lang="pt-PT">
@@ -186,11 +188,15 @@ function getSalaImage($tipo)
                                 echo "<td>" . $horaFormatada . "</td>";
 
                                 if ($horaReservada) {
-                                    $proprietario = $reservas[$horaFormatada];
+                                    $proprietario = $reservas[$horaFormatada]['userId'];
+                                    $reservaId = $reservas[$horaFormatada]['reservaId'];
 
-                                    if ($proprietario == $idUtilizador) {
+                                    if ($proprietario == $idUtilizador && $reservaId == $idReserva) {
                                         echo "<td>Reservado (Você)</td>";
                                         echo "<td><input type='checkbox' class='checkbox' data-id-sala='$idSala' data-hora='$horaFormatada' checked></td>";
+                                    } else if ($proprietario == $idUtilizador) {
+                                        echo "<td>Reservado (Outra Reserva)</td>";
+                                        echo "<td><input type='checkbox' disabled checked></td>";
                                     } else {
                                         echo "<td>Reservado</td>";
                                         echo "<td><input type='checkbox' disabled></td>";
@@ -226,11 +232,15 @@ function getSalaImage($tipo)
                                 echo "<td>" . $horaFormatada . "</td>";
 
                                 if ($horaReservada) {
-                                    $proprietario = $reservas[$horaFormatada];
+                                    $proprietario = $reservas[$horaFormatada]['userId'];
+                                    $reservaId = $reservas[$horaFormatada]['reservaId'];
 
-                                    if ($proprietario == $idUtilizador) {
+                                    if ($proprietario == $idUtilizador && $reservaId == $idReserva) {
                                         echo "<td>Reservado (Você)</td>";
                                         echo "<td><input type='checkbox' class='checkbox' data-id-sala='$idSala' data-hora='$horaFormatada' checked></td>";
+                                    } elseif ($proprietario == $idUtilizador) {
+                                        echo "<td>Reservado (Outra Reserva)</td>";
+                                        echo "<td><input type='checkbox' disabled checked></td>";
                                     } else {
                                         echo "<td>Reservado</td>";
                                         echo "<td><input type='checkbox' disabled></td>";

@@ -1,6 +1,4 @@
 <?php
-session_start();
-// Conexão com a base de dados
 require_once '../conexao.php';
 
 if (!isset($_SESSION['cargo']) || $_SESSION['cargo'] !== 'Administrador') {

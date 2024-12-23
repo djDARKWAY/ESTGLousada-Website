@@ -1,8 +1,12 @@
 <?php
-session_start();
 require_once '../conexao.php';
 
 $conn = getDatabaseConnection();
+
+if (!isset($_SESSION['cargo']) || $_SESSION['cargo'] !== 'Administrador') {
+    header('Location: ../login/login.php');
+    exit();
+}
 
 // Eliminar utilizador
 if (isset($_GET['eliminar'])) {

@@ -55,7 +55,7 @@ if ($whereClauses) {
 $sql = "SELECT 
 sala.nome AS nomeSala, reserva.dataReserva, reserva.horaInicio, reserva.horaFim , reserva.idReserva, reserva.idUtilizador, reserva.idSala, reserva.estado
 FROM reserva 
-JOIN sala ON reserva.idSala = sala.idSala $whereSQL ORDER BY dataReserva, horaInicio";
+JOIN sala ON reserva.idSala = sala.idSala $whereSQL ORDER BY dataReserva DESC, horaFim DESC";
 
 $stmt = $conn->prepare($sql);
 

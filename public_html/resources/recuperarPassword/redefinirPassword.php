@@ -30,7 +30,6 @@
 
         $conn = getDatabaseConnection();
 
-        // Verifica se o token é válido e não expirou
         $sql = "SELECT * FROM utilizador WHERE resetPasswordToken = ? AND expirePasswordToken > NOW()";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("s", $token);
@@ -44,11 +43,9 @@
 
             $user = $result->fetch_assoc();
 
-            // Gera um novo salt e encripta a nova senha
             $salt = bin2hex(random_bytes(10));
             $hashedPassword = password_hash($salt . $new_password, PASSWORD_BCRYPT);
 
-            // Atualiza a senha e limpa o token
             $update_sql = "UPDATE utilizador SET password = ?, salt = ?, resetPasswordToken = NULL, expirePasswordToken = NULL WHERE resetPasswordToken = ?";
             $stmt_update = $conn->prepare($update_sql);
             $stmt_update->bind_param("sss", $hashedPassword, $salt, $token);

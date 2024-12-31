@@ -35,9 +35,10 @@
     <?php
     require_once '../conexao.php';
     $conn = getDatabaseConnection();
+    
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
-        // Sanitização básica das entradas
+        
         $username = filter_var($_POST['username'], FILTER_SANITIZE_STRING);
         $password = $_POST['password'];
 
@@ -53,25 +54,21 @@
             $salt = $utilizador['salt'];
             $hashedPassword = $utilizador['password'];
 
-            // Verifica se a senha fornecida corresponde à senha armazenada
             if (password_verify($salt . $password, $hashedPassword)) {
                 session_start();
                 $_SESSION['idUtilizador'] = $utilizador['idUtilizador'];
                 $_SESSION['cargo'] = $utilizador['cargo'];
 
-                // Verifica se o utilizador pediu para manter a sessão
                 if (isset($_POST['remember'])) {
-                    // Gerar um token aleatório
+
                     $token = bin2hex(random_bytes(16));
                     $hashedToken = password_hash($token, PASSWORD_DEFAULT); // Hashear o token
-    
-                    // Armazenar o token hashe na base de dados
+
                     $update_token = "UPDATE utilizador SET rememberToken = ? WHERE idUtilizador = ?";
                     $stmt_update = $conn->prepare($update_token);
                     $stmt_update->bind_param("si", $hashedToken, $utilizador['idUtilizador']);
                     $stmt_update->execute();
     
-                    // Configurar o cookie com o token não-hasheado
                     setcookie('remember_me', $token, time() + (1 * 24 * 60 * 60), "/");
                 }
                 echo "<script>window.location.href = '../index.php';</script>";

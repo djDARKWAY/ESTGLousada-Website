@@ -1,6 +1,6 @@
 <?php
 error_reporting(0);
-session_start();
+include('../header/header.php');
 include('../conexao.php');
 $conn = getDatabaseConnection();
 
@@ -112,7 +112,6 @@ function getSalaImage($tipo)
 </head>
 
 <body>
-    <?php include('../header/header.php'); ?>
 
     <main class="container">
         <div class="room-details">

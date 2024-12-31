@@ -1,13 +1,14 @@
 <?php
 session_start();
-if (!isset($_SESSION['idUtilizador'])) {
-    header('Location: ../login/login.php');
-    exit();
-}
 
 require_once '../conexao.php';
 $conn = getDatabaseConnection();
 $idUtilizador = $_SESSION['idUtilizador'];
+
+if (!isset($_SESSION['idUtilizador'])) {
+    header('Location: ../login/login.php');
+    exit();
+}
 
 // Obter dados do utilizador
 $sql = "SELECT salt, password FROM utilizador WHERE idUtilizador = ?";

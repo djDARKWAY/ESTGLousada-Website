@@ -44,6 +44,8 @@
             <?php
             require_once '../conexao.php';
             $conn = getDatabaseConnection();
+            
+            
 
             if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
                 $username = strtolower($_POST['username']);

@@ -1,6 +1,6 @@
 <?php
 error_reporting(0);
-session_start();
+include('../header/header.php');
 require_once '../conexao.php';
 
 $conn = getDatabaseConnection();
@@ -86,7 +86,6 @@ $result = $stmt->get_result();
 </head>
 
 <body>
-    <?php include('../header/header.php'); ?>
 
     <div class="container">
         <h1>Área de administração</h1>
@@ -155,7 +154,7 @@ $result = $stmt->get_result();
                             <td><?php echo $reserva['estado']; ?></td>
                             <td>
                                 <a class="btn btn-secondary"
-                                    href="editarUtilizador.php?id=<?php echo $reserva['idUtilizador']; ?>">Editar</a>
+                                    href="editarReserva.php?id=<?php echo $reserva['idReserva']; ?>">Editar</a>
                                 <a class="btn" href="?eliminar=<?php echo $reserva['idReserva']; ?>"
                                     onclick="return confirm('Tem a certeza que deseja eliminar?')">Eliminar</a>
                             </td>

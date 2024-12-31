@@ -1,5 +1,6 @@
 <?php
 require_once '../conexao.php';
+include('../header/header.php');
 
 $conn = getDatabaseConnection();
 
@@ -81,8 +82,6 @@ $result = $stmt->get_result();
 </head>
 
 <body>
-    <?php include('../header/header.php'); ?>
-
     <div class="container">
         <h1>Área de administração</h1>
 

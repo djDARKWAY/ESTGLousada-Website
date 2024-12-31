@@ -1,6 +1,6 @@
 <?php
 error_reporting(0);
-session_start();
+include('../header/header.php');
 require_once '../conexao.php';
 
 $conn = getDatabaseConnection();
@@ -79,7 +79,6 @@ $reservas = $result->fetch_all(MYSQLI_ASSOC);
 </head>
 
 <body>
-    <?php include('../header/header.php'); ?>
 
     <div class="container">
         <h1>Minhas Reservas</h1>

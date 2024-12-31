@@ -1,12 +1,10 @@
 <?php
 error_reporting(0);
-session_start();
-
-// Incluir o ficheiro de conexão à base de dados
+include('./header/header.php');
 include('conexao.php');
 $conn = getDatabaseConnection();
 
-// Verificar se o utilizador está autenticado via sessão ou cookie
+
 $autenticado = false;
 if (isset($_SESSION['cargo'])) {
     $autenticado = true;
@@ -209,7 +207,6 @@ if ($result->num_rows > 0) {
 </head>
 
 <body>
-    <?php include('header/header.php'); ?>
 
     <main class="container">
         <div class="filters">

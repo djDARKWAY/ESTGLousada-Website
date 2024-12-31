@@ -1,4 +1,5 @@
 <?php
+session_start();
 require_once '../conexao.php';
 
 if (!isset($_SESSION['cargo']) || $_SESSION['cargo'] !== 'Administrador') {

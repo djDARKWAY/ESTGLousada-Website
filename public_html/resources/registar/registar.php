@@ -45,7 +45,6 @@
             require_once '../conexao.php';
             $conn = getDatabaseConnection();
             
-            
 
             if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
                 $username = strtolower($_POST['username']);
@@ -74,7 +73,6 @@
 
                 $verificacaoPassword = "/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/";
 
-                // Validações
                 $username = trim(filter_var($username, FILTER_SANITIZE_STRING));
                 $nome = trim(filter_var($nome, FILTER_SANITIZE_STRING));
                 $email = trim(filter_var($email, FILTER_SANITIZE_EMAIL));
@@ -95,7 +93,6 @@
                 }elseif (($_FILES['imagemPerfil']['size'] > 5000000)) {
                     echo "<p>O tamanho da imagem não pode ser maior que 5MB!</p>";
                 } else {
-                    // Processamento da imagem
                     $imagemPerfil = null;
                     if (isset($_FILES['imagemPerfil']) && $_FILES['imagemPerfil']['error'] == 0) {
                         $imagemTipo = $_FILES['imagemPerfil']['type'];
@@ -106,7 +103,6 @@
                         }
                     }
 
-                    // Insere os dados na base de dados
                     $sql = "INSERT INTO utilizador (username, password, nome, email, contacto, cargo, imagemPerfil, salt) 
                             VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
                     $stmt = $conn->prepare($sql);

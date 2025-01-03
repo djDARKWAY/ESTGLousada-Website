@@ -112,3 +112,17 @@ p[style*="color: green"] {
     color: green;
     font-weight: bold;
 }
+
+/* ==================== Links ==================== */
+a {
+    display: block;
+    text-align: center;
+    margin-top: 5px;
+    text-decoration: none;
+    color: var(--text-color);
+    transition: color 0.3s;
+}
+
+a:hover {
+    color: var(--primary-light);
+}

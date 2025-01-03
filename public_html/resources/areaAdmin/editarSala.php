@@ -34,10 +34,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $descricao = $_POST['descricao'];
     $capacidade = isset($_POST['capacidade']) ? intval($_POST['capacidade']) : null;
     $estado = $_POST['estado'];
+    
+    $checkSql = "SELECT idSala FROM sala WHERE nome = ? AND idSala != ?";
+    $stmtCheck = $conn->prepare($checkSql);
+    $stmtCheck->bind_param("si", $nome, $idSala);
+    $stmtCheck->execute();
+    $checkResult = $stmtCheck->get_result();
+
 
     // Validação básica dos campos
     if (empty($nome) || empty($tipo) || empty($estado)) {
         $erro = "Preencha todos os campos obrigatórios.";
+    } else if ($checkResult->num_rows > 0) {
+        $erro = "Já existe uma sala com esse nome.";
+    } else if ($capacidade !== null && $capacidade <= 10) {
+        $erro = "A Sala tem que ter pelo menos 10 lugares de capacidade.";
     } else {
         $sqlUpdate = "UPDATE sala SET nome = ?, tipo = ?, descricao = ?, capacidade = ?, estado = ? WHERE idSala = ?";
         $stmtUpdate = $conn->prepare($sqlUpdate);
@@ -99,13 +110,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <textarea id="descricao" name="descricao"><?php echo htmlspecialchars($sala['descricao']); ?></textarea><br>
 
         <label for="capacidade">Capacidade:</label>
-        <input type="number" id="capacidade" name="capacidade"
+        <input type="number" id="capacidade" name="capacidade" min="10" required
             value="<?php echo htmlspecialchars($sala['capacidade']); ?>"><br>
 
         <label for="estado">Estado:</label>
         <select id="estado" name="estado" required>
             <?php
-            $estados = ['Disponível', 'Indisponível', 'Brevemente'];
+            $estados = ['Disponível', 'Brevemente'];
             foreach ($estados as $estado) {
                 $selected = $estado === $sala['estado'] ? 'selected' : '';
                 echo "<option value='$estado' $selected>$estado</option>";
@@ -114,6 +125,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </select><br>
 
         <button type="submit">Atualizar</button>
+        <a class="voltar" href="../index.php ">◄ Voltar</a>
     </form>
 </body>
 

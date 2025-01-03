@@ -1,5 +1,11 @@
 <?php
-session_start();
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
+
+function isUser($role) {
+    return isset($_SESSION['cargo']) && $_SESSION['cargo'] == $role;
+}
 ?>
 
 <!DOCTYPE html>
@@ -15,11 +21,13 @@ session_start();
         <div class="navbar-content">
             <div class="logo">
                 <img class="PPorto" src="/media/logoPPorto.png">
-                <a href="/index.php">Gestão de salas ESTG</a>
+                <a href="/index.php">
+                    <?php echo isUser('Administrador') ? 'Gestão de salas ESTG' : 'Salas ESTG'; ?>
+                </a>
             </div>
 
             <div class="nav-links">
-                <?php if (isset($_SESSION['cargo']) && $_SESSION['cargo'] == 'Administrador'): ?>
+                <?php if (isUser('Administrador')): ?>
                     <div class="dropdown">
                         <button class="dropdown-btn">Área de administração</button>
                         <div class="dropdown-content">
@@ -29,7 +37,7 @@ session_start();
                     </div>
                     <a href="/perfil/perfil.php">Perfil</a>
                     <a href="/logout.php">Logout</a>
-                <?php elseif (isset($_SESSION['cargo']) && $_SESSION['cargo'] == 'Professor'): ?>
+                <?php elseif (isUser('Professor')): ?>
                     <a href="/reservarSala/minhaReserva.php">Minhas Reservas</a>
                     <a href="/perfil/perfil.php">Perfil</a>
                     <a href="/logout.php">Logout</a>
@@ -40,3 +48,5 @@ session_start();
             </div>
         </div>
     </nav>
+</body>
+</html>

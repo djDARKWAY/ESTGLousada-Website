@@ -1,51 +1,40 @@
 <?php
-error_reporting(0);
 session_start();
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 require_once '../conexao.php';
 
 $conn = getDatabaseConnection();
 
-if (!isset($_SESSION['idUtilizador'])) {
+if (!isset($_SESSION['cargo']) || $_SESSION['cargo'] !== 'Administrador') {
     header('Location: ../login/login.php');
     exit();
 }
 
-if (!isset($_GET['idSala']) || !isset($_GET['idReserva'])) {
-    header('Location: ../index.php');
-    exit();
-}
-
-$idReserva = (int) $_GET['idReserva'];
-$idUtilizador = $_SESSION['idUtilizador'];
-
-// Verificar se a reserva pertence ao utilizador logado
-$sqlVerificaReserva = "SELECT idUtilizador FROM reserva WHERE idReserva = ? AND dataReserva > CURDATE()";
-$stmtVerificaReserva = $conn->prepare($sqlVerificaReserva);
-$stmtVerificaReserva->bind_param("i", $idReserva);
-$stmtVerificaReserva->execute();
-$resultVerificaReserva = $stmtVerificaReserva->get_result();
-
-$reserva = $resultVerificaReserva->fetch_assoc();
-
-if ($resultVerificaReserva->num_rows > 0) {
-    if ($reserva['idUtilizador'] !== $idUtilizador) {
-        header('Location: minhaReserva.php');
-    }
-} else {
-    header('Location: ../error.php?code=404&message=Reserva não encontrada.');
-}
-
-$stmtVerificaReserva->close();
+$idReserva = (int)$_GET['idReserva'];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $idReserva = (int) $_POST['idReserva'];
+    $idReserva = (int)$_POST['idReserva'];
     $reservas = json_decode($_POST['reservas'], true);
-    $idSala = (int) $_POST['idSala'];
-    $idUtilizador = $_SESSION['idUtilizador'];
-    $dataReserva = $_POST['dataReserva'];
+
+    $sqlIdSala = "SELECT idSala, dataReserva FROM reserva WHERE idReserva = ?";
+    $stmtIdSala = $conn->prepare($sqlIdSala);
+    $stmtIdSala->bind_param("i", $idReserva);
+    $stmtIdSala->execute();
+    $resultIdSala = $stmtIdSala->get_result();
+
+    if ($resultIdSala->num_rows === 0) {
+        echo json_encode(['success' => false, 'message' => 'Reserva não encontrada.']);
+        exit();
+    }
+
+    $reservaInfo = $resultIdSala->fetch_assoc();
+    $idSala = $reservaInfo['idSala'];
+    $dataReserva = $reservaInfo['dataReserva'];
+    $stmtIdSala->close();
 
     if (count($reservas) === 1) {
-        // Atualizar a reserva existente com o primeiro horário
         $sqlUpdate = "UPDATE reserva SET horaInicio = ?, horaFim = ? WHERE idReserva = ?";
         $stmtUpdate = $conn->prepare($sqlUpdate);
         $stmtUpdate->bind_param("ssi", $reservas[0]['horaInicio'], $reservas[0]['horaFim'], $idReserva);
@@ -60,11 +49,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit();
 }
 
-$idUtilizador = $_SESSION['idUtilizador'];
-$idSala = (int) $_GET['idSala'];
-$idReserva = (int) $_GET['idReserva'];
+$sqlReserva = "SELECT dataReserva, idSala, idUtilizador, horaInicio, horaFim, estado FROM reserva WHERE idReserva = ?";
+$stmtReserva = $conn->prepare($sqlReserva);
+$stmtReserva->bind_param("i", $idReserva);
+$stmtReserva->execute();
+$resultReserva = $stmtReserva->get_result();
 
-// Buscar informações da sala
+if ($resultReserva->num_rows === 0) {
+    header('Location: ../error.php?code=404&message=Reserva não encontrada.');
+}
+
+$reserva = $resultReserva->fetch_assoc();
+$idUtilizador = $reserva['idUtilizador'];
+$idSala = $reserva['idSala'];
+$dataReserva = $reserva['dataReserva'];
+$estado = $reserva['estado'];
+$stmtReserva->close();
+
 $sqlSala = "SELECT idSala, nome, tipo, descricao, capacidade, estado FROM sala WHERE idSala = ?";
 $stmtSala = $conn->prepare($sqlSala);
 $stmtSala->bind_param("i", $idSala);
@@ -75,29 +76,16 @@ if ($resultSala->num_rows === 0) {
     die("Sala não encontrada.");
 }
 
-$sala = $resultSala->fetch_assoc();
-$stmtSala->close();
-
-$sqlReserva = "SELECT dataReserva, horaInicio, horaFim, estado FROM reserva WHERE idReserva = ?";
-$stmtReserva = $conn->prepare($sqlReserva);
-$stmtReserva->bind_param("i", $idReserva);
-$stmtReserva->execute();
-$resultReserva = $stmtReserva->get_result();
-
-
-$reserva = $resultReserva->fetch_assoc();
-$dataReserva = $reserva['dataReserva'];
-
-if (($dataReserva <= date('Y-m-d')) || ($reserva['estado'] !== 'Confirmada')) {
+if (($dataReserva <= date('Y-m-d')) || ($estado !== 'Confirmada')) {
     header('Location: ../error.php?code=403&message=Não é possível editar reservas passadas ou canceladas.');
 }
 
-$stmtReserva->close();
+$sala = $resultSala->fetch_assoc();
+$stmtSala->close();
 
-// Horários reservados para a sala e data
 $sqlReservas = "SELECT TIME_FORMAT(horaInicio, '%H:%i') AS horaInicio, TIME_FORMAT(horaFim, '%H:%i') AS horaFim, idUtilizador, idReserva 
                 FROM reserva 
-                WHERE idSala = ? AND dataReserva = ?";
+                WHERE idSala = ? AND dataReserva = ? AND estado = 'Confirmada'";
 $stmtReservas = $conn->prepare($sqlReservas);
 $stmtReservas->bind_param("is", $idSala, $dataReserva);
 $stmtReservas->execute();
@@ -139,6 +127,7 @@ function getSalaImage($tipo)
     return $imagens[$tipo] ?? '../media/salaDefault.png';
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="pt-PT">
@@ -197,20 +186,19 @@ function getSalaImage($tipo)
                                     $reservaId = $reservas[$horaFormatada]['reservaId'];
 
                                     if ($proprietario == $idUtilizador && $reservaId == $idReserva) {
-                                        echo "<td style='color: blue; font-weight: bold;'>Reservado (Você)</td>";
+                                        echo "<td>Reservado (Esta Reserva)</td>";
                                         echo "<td><input type='checkbox' class='checkbox' data-id-sala='$idSala' data-hora='$horaFormatada' checked></td>";
                                     } else if ($proprietario == $idUtilizador) {
-                                        echo "<td style='color: red;'>Reservado (Outra Reserva)</td>";
+                                        echo "<td>Reservado (Outra Reserva deste utilizador)</td>";
                                         echo "<td><input type='checkbox' disabled checked></td>";
                                     } else {
-                                        echo "<td style='color: darkred;'>Reservado</td>";
+                                        echo "<td>Reservado</td>";
                                         echo "<td><input type='checkbox' disabled></td>";
                                     }
-                                    } else {
-                                        echo "<td style='color: green;'>Disponível</td>";
-                                        echo "<td><input type='checkbox' class='checkbox' data-id-sala='$idSala' data-hora='$horaFormatada'></td>";
-                                    }
-                                    
+                                } else {
+                                    echo "<td>Disponível</td>";
+                                    echo "<td><input type='checkbox' class='checkbox' data-id-sala='$idSala' data-hora='$horaFormatada'></td>";
+                                }
 
                                 echo "</tr>";
                             }
@@ -242,20 +230,19 @@ function getSalaImage($tipo)
                                     $reservaId = $reservas[$horaFormatada]['reservaId'];
 
                                     if ($proprietario == $idUtilizador && $reservaId == $idReserva) {
-                                        echo "<td style='color: blue;'>Reservado (Você)</td>";
+                                        echo "<td>Reservado (Esta Reserva)</td>";
                                         echo "<td><input type='checkbox' class='checkbox' data-id-sala='$idSala' data-hora='$horaFormatada' checked></td>";
-                                    } else if ($proprietario == $idUtilizador) {
-                                        echo "<td style='color: darkred; font-weight: bold; '>Reservado (Outra Reserva)</td>";
+                                    } elseif ($proprietario == $idUtilizador) {
+                                        echo "<td>Reservado (Outra Reserva deste utilizador)</td>";
                                         echo "<td><input type='checkbox' disabled checked></td>";
                                     } else {
-                                        echo "<td style='color: red;'>Reservado</td>";
+                                        echo "<td>Reservado</td>";
                                         echo "<td><input type='checkbox' disabled></td>";
                                     }
-                                    } else {
-                                        echo "<td style='color: green;'>Disponível</td>";
-                                        echo "<td><input type='checkbox' class='checkbox' data-id-sala='$idSala' data-hora='$horaFormatada'></td>";
-                                    }
-                                    
+                                } else {
+                                    echo "<td>Disponível</td>";
+                                    echo "<td><input type='checkbox' class='checkbox' data-id-sala='$idSala' data-hora='$horaFormatada'></td>";
+                                }
 
                                 echo "</tr>";
                             }
@@ -279,7 +266,7 @@ function getSalaImage($tipo)
                 var horaInicio = "";
                 var horaFim = "";
 
-                checkboxes.forEach(function(checkbox, index) {
+                checkboxes.forEach(function (checkbox, index) {
                     var hora = checkbox.getAttribute('data-hora');
                     if (horaInicio === "") horaInicio = hora; // Define o início
 
@@ -288,12 +275,12 @@ function getSalaImage($tipo)
                         index === checkboxes.length - 1 ||
                         !isNextHour(checkbox, checkboxes[index + 1])
                     ) {
-                        horaFim = incrementHour(hora); // Incrementa a última hora
+                        horaFim = incrementHour(hora); 
                         horariosSelecionados.push({
                             horaInicio: horaInicio,
                             horaFim: horaFim,
                         });
-                        horaInicio = ""; // Reseta o início
+                        horaInicio = ""; 
                     }
                 });
 
@@ -301,8 +288,8 @@ function getSalaImage($tipo)
                     confirm(
                         "Tem a certeza de que deseja reservar para as seguintes horas: " +
                         horariosSelecionados
-                        .map((r) => r.horaInicio + " - " + r.horaFim)
-                        .join(", ") +
+                            .map((r) => r.horaInicio + " - " + r.horaFim)
+                            .join(", ") +
                         "?"
                     )
                 ) {
@@ -319,7 +306,7 @@ function getSalaImage($tipo)
                     data.append("idSala", "<?php echo $idSala; ?>");
                     data.append("dataReserva", document.getElementById("dataReserva").value);
 
-                    xhr.onload = function() {
+                    xhr.onload = function () {
                         if (xhr.status === 200) {
                             var response = JSON.parse(xhr.responseText);
                             if (response.success) {
@@ -336,7 +323,7 @@ function getSalaImage($tipo)
                     xhr.send(data.toString());
                 }
             } else {
-                alert("Selecione ao menos uma hora para reservar.");
+                alert("Selecione ao menos uma hora para editar a reserva.");
             }
         }
 

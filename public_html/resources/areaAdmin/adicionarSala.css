@@ -121,3 +121,17 @@ p[style*="color:lightgreen"] {
 p[style*="color:red"] {
     color: red;
 }
+
+/* ==================== Links ==================== */
+a {
+    display: block;
+    text-align: center;
+    margin-top: 5px;
+    text-decoration: none;
+    color: var(--text-color);
+    transition: color 0.3s;
+}
+
+a:hover {
+    color: var(--primary-light);
+}

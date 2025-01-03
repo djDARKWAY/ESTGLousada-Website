@@ -1,13 +1,17 @@
 <?php
+session_start();
 error_reporting(0);
-include('../header/header.php');
+
 include('../conexao.php');
 $conn = getDatabaseConnection();
 
 if (!isset($_SESSION['idUtilizador'])) {
-    header('Location: ../login/login.php');
+    header("Location: ../login/login.php");
     exit();
+} else if ($_SESSION['cargo'] !== "Professor") {
+    header ("Location: ../index.php");
 }
+
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $idUtilizador = isset($_SESSION['idUtilizador']) ? $_SESSION['idUtilizador'] : 0;
@@ -39,13 +43,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit();
 }
 
-// Validar ID da sala
 if (!isset($_GET['idSala']) || empty($_GET['idSala'])) {
-    die("Sala não especificada.");
+    header("Location: ../error.php?code=400&message=Erro ao processar a reserva. Por favor, tente novamente.");
 }
 
 $idSala = $_GET['idSala'];
 $dataReserva = isset($_GET['dataReserva']) ? $_GET['dataReserva'] : date('Y-m-d');
+
+
+if (!DateTime::createFromFormat('Y-m-d', $dataReserva) || DateTime::getLastErrors()['warning_count'] > 0 || DateTime::getLastErrors()['error_count'] > 0 || $dataReserva <= date('Y-m-d')) {
+    header("Location: ../error.php?code=400&message=Data de reserva inválida.");
+}
+
 
 // Obter detalhes da sala
 $sql = "SELECT idSala, nome, tipo, descricao, capacidade, estado FROM sala WHERE idSala = ?";
@@ -54,14 +63,18 @@ $stmt->bind_param("i", $idSala);
 $stmt->execute();
 $result = $stmt->get_result();
 
-if ($result->num_rows === 0) {
-    die("Sala não encontrada.");
-}
-
 $sala = $result->fetch_assoc();
 
+if ($result->num_rows === 0) {
+    header("Location: ../error.php?code=404&message=Sala não encontrada.");
+} else if ($sala['estado'] !== "Disponível") {
+    header ("Location: ../error.php?code=403&message=Sala indisponível por tempo indeterminado para reserva.");
+}
+
+//$sala = $result->fetch_assoc();
+
 // Obter reservas para a data selecionada
-$sqlReservas = "SELECT TIME_FORMAT(horaInicio, '%H:%i') AS horaInicio, TIME_FORMAT(horaFim, '%H:%i') AS horaFim FROM reserva WHERE idSala = ? AND dataReserva = ?";
+$sqlReservas = "SELECT TIME_FORMAT(horaInicio, '%H:%i') AS horaInicio, TIME_FORMAT(horaFim, '%H:%i') AS horaFim FROM reserva WHERE idSala = ? AND dataReserva = ? AND estado = 'Confirmada'";
 $stmtReservas = $conn->prepare($sqlReservas);
 $stmtReservas->bind_param("is", $idSala, $dataReserva);
 $stmtReservas->execute();
@@ -81,7 +94,7 @@ while ($row = $reservasResult->fetch_assoc()) {
 
 $stmtReservas->close();
 
-// Função para determinar a imagem com base no tipo da sala
+
 function getSalaImage($tipo)
 {
     $imagens = [
@@ -112,7 +125,7 @@ function getSalaImage($tipo)
 </head>
 
 <body>
-
+    <?php include('../header/header.php'); ?>
     <main class="container">
         <div class="room-details">
             <h1><?php echo htmlspecialchars($sala['nome']); ?></h1>
@@ -155,10 +168,10 @@ function getSalaImage($tipo)
                                 echo "<td>" . $horaFormatada . "</td>";
 
                                 if ($horaReservada) {
-                                    echo "<td>Reservado</td>";
+                                    echo "<td style='color: red;'>Reservado</td>";
                                     echo "<td><input type='checkbox' disabled></td>";
                                 } else {
-                                    echo "<td>Disponível</td>";
+                                    echo "<td style='color: green;'>Disponível</td>";
                                     echo "<td><input type='checkbox' class='checkbox' data-id-sala='$idSala' data-hora='$horaFormatada'></td>";
                                 }
 
@@ -188,10 +201,10 @@ function getSalaImage($tipo)
                                 echo "<td>" . $horaFormatada . "</td>";
 
                                 if ($horaReservada) {
-                                    echo "<td>Reservado</td>";
+                                    echo "<td style='color: red;'>Reservado</td>";
                                     echo "<td><input type='checkbox' disabled></td>";
                                 } else {
-                                    echo "<td>Disponível</td>";
+                                    echo "<td style='color: green;'>Disponível</td>";
                                     echo "<td><input type='checkbox' class='checkbox' data-id-sala='$idSala' data-hora='$horaFormatada'></td>";
                                 }
 
@@ -214,20 +227,17 @@ function getSalaImage($tipo)
             var today = new Date();
             var selectedDate = new Date(dataReserva);
 
-            // Set the time of today to midnight for comparison
             today.setHours(0, 0, 0, 0);
 
-            // Check if the selected date is today or in the past
             if (selectedDate <= today) {
                 alert("Você não pode reservar para hoje ou uma data passada.");
-                // Reset the date input to tomorrow
+
                 var tomorrow = new Date();
                 tomorrow.setDate(today.getDate() + 1);
                 document.getElementById('dataReserva').value = tomorrow.toISOString().split('T')[0];
-                return; // Exit the function
+                return;
             }
 
-            // If the date is valid, reload the page with the new date
             window.location.href = "?idSala=<?php echo $idSala; ?>&dataReserva=" + dataReserva;
         }
 
@@ -267,11 +277,10 @@ function getSalaImage($tipo)
 
                     xhr.onload = function () {
                         if (xhr.status === 200) {
-                            // Assuming the response is JSON and contains a success property
+
                             var response = JSON.parse(xhr.responseText);
                             if (response.success) {
                                 alert("Reserva realizada com sucesso!");
-                                // Reload the page to refresh the reservation table
                                 window.location.reload();
                             } else {
                                 alert("Erro ao realizar a reserva. Tente novamente.");

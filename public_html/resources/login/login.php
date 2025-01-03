@@ -62,7 +62,7 @@
                 if (isset($_POST['remember'])) {
 
                     $token = bin2hex(random_bytes(16));
-                    $hashedToken = password_hash($token, PASSWORD_DEFAULT); // Hashear o token
+                    $hashedToken = password_hash($token, PASSWORD_DEFAULT); 
 
                     $update_token = "UPDATE utilizador SET rememberToken = ? WHERE idUtilizador = ?";
                     $stmt_update = $conn->prepare($update_token);

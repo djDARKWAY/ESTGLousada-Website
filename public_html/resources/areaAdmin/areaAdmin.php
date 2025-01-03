@@ -83,7 +83,7 @@ $result = $stmt->get_result();
 
 <body>
     <div class="container">
-        <h1>Área de administração</h1>
+        <h1>Gestão de Utilizadores</h1>
 
         <div class="filters-container">
             <form method="GET" id="filtersForm">
@@ -131,7 +131,6 @@ $result = $stmt->get_result();
                     </div>
                 </div>
             </form>
-            <p>Gestão de utilizadores</p>
             <button class="btn">Adicionar novo utilizador</button>
         </div>
 

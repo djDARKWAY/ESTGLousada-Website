@@ -47,6 +47,12 @@ if (!empty($_GET['dataReserva'])) {
     $types .= "s";
 }
 
+if (!empty($_GET['estado'])) {
+    $whereClauses[] = "reserva.estado = ?";
+    $params[] = $_GET['estado'];
+    $types .= "s";
+}
+
 $whereSQL = "";
 if ($whereClauses) {
     $whereSQL = "WHERE " . implode(" AND ", $whereClauses);
@@ -110,6 +116,17 @@ $reservas = $result->fetch_all(MYSQLI_ASSOC);
                         </div>
 
                         <div class="filter-item">
+                            <label for="estado">Estado</label>
+                            <select name="estado">
+                                <option value="">Todos</option>
+                                <option value="Confirmada" <?php echo ($_GET['estado'] ?? '') === 'Confirmada' ? 'selected' : ''; ?>>
+                                    Confirmada</option>
+                                <option value="Cancelada" <?php echo ($_GET['estado'] ?? '') === 'Cancelada' ? 'selected' : ''; ?>>
+                                    Cancelada</option>
+                            </select>
+                        </div>
+
+                        <div class="filter-item">
                             <button type="submit">Aplicar</button>
                         </div>
                     </div>
@@ -118,7 +135,6 @@ $reservas = $result->fetch_all(MYSQLI_ASSOC);
         </div>
 
         <div class="reserva-table">
-            <h1>Reservas</h1>
             <table>
                 <thead>
                     <tr>

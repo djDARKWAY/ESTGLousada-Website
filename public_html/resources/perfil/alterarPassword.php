@@ -18,13 +18,11 @@ $stmt->execute();
 $result = $stmt->get_result();
 $utilizador = $result->fetch_assoc();
 
-// Processar formulário
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $passwordAntiga = $_POST['passwordAntiga'];
     $novaPassword = $_POST['novaPassword'];
     $confirmarNovaPassword = $_POST['confirmarNovaPassword'];
 
-    // Validar password antiga
     $salt = $utilizador['salt'];
     $hashedPassword = $utilizador['password'];
 

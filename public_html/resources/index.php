@@ -17,9 +17,8 @@ if (isset($_SESSION['cargo'])) {
     $result = $stmt->get_result();
 
     while ($user = $result->fetch_assoc()) {
-
         if (password_verify($rememberMeToken, $user['rememberToken'])) {
-            // Configurar a sessão
+
             session_start();
             $_SESSION['idUtilizador'] = $user['idUtilizador'];
             $_SESSION['cargo'] = $user['cargo'];
@@ -109,9 +108,7 @@ function verificarDisponibilidade($idSala, $conn)
 
         if ($estadoSala === 'Brevemente') {
             return 'BREVEMENTE';
-        } elseif ($estadoSala === 'Indisponível') {
-            return 'INDISPONÍVEL';
-        }
+        } 
     }
 
     // Seleciona todas as reservas confirmadas para a data fornecida
@@ -181,7 +178,6 @@ if ($tipoFiltro && $tipoFiltro !== '' && $capacidadeFiltro) {
     $stmt->bind_param("ii", $salasPorPagina, $offset);
 }
 
-// Executar a query
 $stmt->execute();
 $result = $stmt->get_result();
 $salas = [];
@@ -285,7 +281,7 @@ if ($result->num_rows > 0) {
                                         Reservar
                                     </a>
                                 <?php else : ?>
-                                    <a href="../reservarSala/reservarSala.php?idSala=<?php echo $sala['idSala']; ?>&dataReserva=<?php echo isset($_GET['data']) ? $_GET['data'] : date('Y-m-d', strtotime('+1 day')); ?>"
+                                    <a 
                                         class="btn reservar-btn" style="background-color: grey; cursor: not-allowed;">
                                         Reservar
                                     </a>
@@ -380,7 +376,7 @@ if ($result->num_rows > 0) {
 </html>
 
 <?php
-// Fechar a conexão com a base de dados
+
 $stmt->close();
 $conn->close();
 ?>

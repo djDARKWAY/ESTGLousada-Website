@@ -50,6 +50,12 @@ if (!empty($_GET['dataReserva'])) {
     $types .= "s";
 }
 
+if (!empty($_GET['estado'])) {
+    $whereClauses[] = "reserva.estado = ?";
+    $params[] = $_GET['estado'];
+    $types .= "s";
+}
+
 $whereSQL = "";
 if ($whereClauses) {
     $whereSQL = "WHERE " . implode(" AND ", $whereClauses);
@@ -61,7 +67,7 @@ $sql = "
     FROM reserva
     INNER JOIN utilizador ON reserva.idUtilizador = utilizador.idUtilizador
     INNER JOIN sala ON reserva.idSala = sala.idSala
-    $whereSQL
+    $whereSQL ORDER BY dataReserva DESC, horaFim DESC
 ";
 
 $stmt = $conn->prepare($sql);
@@ -88,7 +94,7 @@ $result = $stmt->get_result();
 <body>
 
     <div class="container">
-        <h1>Área de administração</h1>
+        <h1>Gestão de Reservas</h1>
 
         <div class="filters-container">
             <form method="GET" id="filtersForm">
@@ -113,10 +119,22 @@ $result = $stmt->get_result();
                                 value="<?php echo htmlspecialchars($_GET['nomeSala'] ?? ''); ?>">
                         </div>
 
+                        <div class="filter-item">
+                            <label for="estado">Estado</label>
+                            <select name="estado">
+                                <option value="">Todos</option>
+                                <option value="Confirmada" <?php echo ($_GET['estado'] ?? '') === 'Confirmada' ? 'selected' : ''; ?>>
+                                    Confirmada</option>
+                                <option value="Cancelada" <?php echo ($_GET['estado'] ?? '') === 'Cancelada' ? 'selected' : ''; ?>>
+                                    Cancelada</option>
+                            </select>
+                        </div>
+                        
+
                         <div class="date-filter">
                             <label for="dataReserva">Data</label>
                             <input type="date" name="dataReserva"
-                                value="<?php echo htmlspecialchars($_GET['dataReserva'] ?? date('Y-m-d')); ?>">
+                                value="<?php echo htmlspecialchars($_GET['dataReserva'] ?? ''); ?>">
                         </div>
 
                         <div class="filter-item">
@@ -128,7 +146,6 @@ $result = $stmt->get_result();
         </div>
 
         <div class="reserva-table">
-            <h1>Reservas</h1>
             <table>
                 <thead>
                     <tr>
@@ -153,10 +170,12 @@ $result = $stmt->get_result();
                             <td><?php echo $reserva['horaFim']; ?></td>
                             <td><?php echo $reserva['estado']; ?></td>
                             <td>
+                                <?php if (($reserva['dataReserva'] > date('Y-m-d')) && ($reserva['estado'] === 'Confirmada')): ?>
                                 <a class="btn btn-secondary"
-                                    href="editarReserva.php?id=<?php echo $reserva['idReserva']; ?>">Editar</a>
+                                    href="editarReserva.php?idReserva=<?php echo $reserva['idReserva']; ?>">Editar</a>
                                 <a class="btn" href="?eliminar=<?php echo $reserva['idReserva']; ?>"
                                     onclick="return confirm('Tem a certeza que deseja eliminar?')">Eliminar</a>
+                                <?php endif; ?>
                             </td>
                         </tr>
                     <?php endwhile; ?>

@@ -14,11 +14,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nome = $_POST['nome'];
     $tipo = $_POST['tipo'];
     $descricao = $_POST['descricao'];
-    $capacidade = isset($_POST['capacidade']) ? intval($_POST['capacidade']) : null;
+    $capacidade = isset($_POST['capacidade']) ? intval($_POST['capacidade']) : 10;
     $estado = $_POST['estado'];
+
+    $sql = "SELECT * FROM sala WHERE nome = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("s", $nome);
+    $stmt->execute();
+    $result = $stmt->get_result();
 
     if (empty($nome) || empty($tipo) || empty($estado)) {
         $erro = "Preencha todos os campos obrigatórios.";
+    } else if ($result->num_rows > 0) {
+        $erro = "Já existe uma sala com esse nome.";
+    } else if ($capacidade !== null && $capacidade <= 10) {
+        $erro = "A Sala tem que ter pelo menos 10 lugares de capacidade.";
     } else {
         $sql = "INSERT INTO sala (nome, tipo, descricao, capacidade, estado) VALUES (?, ?, ?, ?, ?)";
         $stmt = $conn->prepare($sql);
@@ -69,7 +79,7 @@ $conn->close();
                 <label for="descricao">Descrição:</label>
                 <textarea id="descricao" name="descricao" rows="4"></textarea>
                 <label for="capacidade">Capacidade:</label>
-                <input type="number" id="capacidade" name="capacidade" min="1" >
+                <input type="number" id="capacidade" name="capacidade" min="10" required>
                 <label for="estado">Estado:</label>
                 <select id="estado" name="estado" required>
                     <option value="Disponível">Disponível</option>
@@ -77,6 +87,7 @@ $conn->close();
                     <option value="Brevemente">Brevemente</option>
                 </select>
                 <button type="submit" name="submit">Adicionar Sala</button>
+                <a class="voltar" href="../index.php ">◄ Voltar</a>
             </form>
         </div>
     </div>

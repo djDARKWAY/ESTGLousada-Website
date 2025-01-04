@@ -75,6 +75,7 @@ p {
 /* ==================== Filters ==================== */
 .filters-container {
   margin-bottom: 1rem;
+  width: 101%;
 }
 .filters {
   display: flex;
@@ -93,7 +94,7 @@ p {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
-  width: calc(33.333% - 1rem);
+  width: calc(25% - 1rem);
 }
 
 .filter-item label,
@@ -210,3 +211,25 @@ button[type="submit"] {
 button[type="submit"]:hover {
   background-color: var(--primary-light);
 }
+
+.button-aplicar {
+  display: flex; /* Use flex para permitir o alinhamento do botão */
+  width: 100%; /* Garante que o botão ocupe a largura total do container */
+}
+
+.button-aplicar button {
+  width: 23.5%; /* O botão vai ocupar toda a largura do container */
+  padding: 0.4rem;
+  font-size: 1rem; /* Aumenta o tamanho da fonte */
+  border-radius: 0.5rem; /* Deixa os cantos mais arredondados */
+  background-color: var(--primary-color); /* Cor de fundo */
+  color: white; /* Cor do texto */
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.button-aplicar button:hover {
+  background-color: var(--primary-light); /* Cor de fundo ao passar o mouse */
+}
+

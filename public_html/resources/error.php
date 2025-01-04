@@ -1,6 +1,6 @@
 <?php
-$error_code = $_GET['code'] ?? 500; // Código de erro (padrão: 500)
-$error_message = $_GET['message'] ?? 'Algo deu errado. Por favor, tente novamente mais tarde.'; // Mensagem do erro
+$error_code = $_GET['code'] ?? 500;
+$error_message = $_GET['message'] ?? 'Algo deu errado. Por favor, tente novamente mais tarde.';
 ?>
 <!DOCTYPE html>
 <html lang="pt">

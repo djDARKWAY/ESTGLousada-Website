@@ -63,13 +63,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 
 <body>
-    <div class="container">
-        <?php if (isset($mensagem)): ?>
-            <p style="color:lightgreen; font-weight:bold;"><?php echo $mensagem; ?></p>
-        <?php endif; ?>
-        <?php if (isset($erro)): ?>
-            <p style="color:red; font-weight:bold;"><?php echo $erro; ?></p>
-        <?php endif; ?>
+<div class="container">
+    <div class="login-box">
+        
 
         <form method="POST" action="">
             <label for="passwordAntiga">Antiga palavra-passe:</label>
@@ -78,7 +74,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <label for="novaPassword">Nova palavra-passe:</label>
             <input type="password" id="novaPassword" name="novaPassword" required>
 
-            
             <label for="confirmarNovaPassword">Confirmar nova palavra-passe:</label>
             <input type="password" id="confirmarNovaPassword" name="confirmarNovaPassword" required>
 
@@ -86,7 +81,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <a class="voltar" href="../perfil/perfil.php">◄ Voltar</a>
         </form>
+
+        <?php if (isset($mensagem)): ?>
+            <p class="success-message"><?php echo $mensagem; ?></p>
+        <?php endif; ?>
+        <?php if (isset($erro)): ?>
+            <p class="error-message"><?php echo $erro; ?></p>
+        <?php endif; ?>
     </div>
+</div>
+
 </body>
 
 </html>

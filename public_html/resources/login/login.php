@@ -34,6 +34,7 @@
 
     <?php
     require_once '../conexao.php';
+    include_once '../logs.php';
     $conn = getDatabaseConnection();
     
 
@@ -71,11 +72,14 @@
     
                     setcookie('remember_me', $token, time() + (1 * 24 * 60 * 60), "/");
                 }
+                writeLoginLog("User '$username' logged in.");
                 echo "<script>window.location.href = '../index.php';</script>";
             } else {
+                writeLoginLog("Failed login attempt for username '$username'.", "WARNING");
                 echo "<p style='color:red;text-align:center;'>Erro: Credenciais incorretas.</p>";
             }
         } else {
+            writeLoginLog("Failed login attempt for username '$username'.", "WARNING");
             echo "<p style='color:red;text-align:center;'>Erro: Credenciais incorretas.</p>";
         }
     }

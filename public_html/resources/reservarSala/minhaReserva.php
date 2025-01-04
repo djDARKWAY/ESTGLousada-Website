@@ -6,8 +6,10 @@ require_once '../conexao.php';
 $conn = getDatabaseConnection();
 
 if (!isset($_SESSION['idUtilizador'])) {
-    header('Location: ../login/login.php');
+    header("Location: ../login/login.php");
     exit();
+} else if ($_SESSION['cargo'] !== "Professor") {
+    header ("Location: ../error.php?code=403&message=Você não tem permissão para acessar esta área.");
 }
 
 // Eliminar reserva
@@ -33,14 +35,12 @@ if (!empty($_GET['estadoReserva']) && $_GET['estadoReserva'] != 'TODOS') {
     }
 }
 
-// Filtro de nome da sala
 if (!empty($_GET['nomeSala'])) {
     $whereClauses[] = "sala.nome LIKE ?";
     $params[] = "%" . $_GET['nomeSala'] . "%";
     $types .= "s";
 }
 
-// Filtro de data da reserva
 if (!empty($_GET['dataReserva'])) {
     $whereClauses[] = "reserva.dataReserva = ?";
     $params[] = $_GET['dataReserva'];
@@ -107,7 +107,7 @@ $reservas = $result->fetch_all(MYSQLI_ASSOC);
                         </div>
 
                         <div class="filter-item">
-                            <label for="estadoReserva">Estado</label>
+                            <label for="estadoReserva">Período</label>
                             <select name="estadoReserva" id="estadoReserva" onchange="this.form.submit()">
                                 <option value="TODOS" <?php echo ($_GET['estadoReserva'] ?? 'TODOS') == 'TODOS' ? 'selected' : ''; ?>>Todos</option>
                                 <option value="Ativas" <?php echo ($_GET['estadoReserva'] ?? '') == 'Ativas' ? 'selected' : ''; ?>>Ativas</option>
@@ -117,7 +117,7 @@ $reservas = $result->fetch_all(MYSQLI_ASSOC);
 
                         <div class="filter-item">
                             <label for="estado">Estado</label>
-                            <select name="estado">
+                            <select name="estado" id="estado" onchange="this.form.submit()">
                                 <option value="">Todos</option>
                                 <option value="Confirmada" <?php echo ($_GET['estado'] ?? '') === 'Confirmada' ? 'selected' : ''; ?>>
                                     Confirmada</option>
@@ -126,7 +126,7 @@ $reservas = $result->fetch_all(MYSQLI_ASSOC);
                             </select>
                         </div>
 
-                        <div class="filter-item">
+                        <div class="button-aplicar">
                             <button type="submit">Aplicar</button>
                         </div>
                     </div>
@@ -155,7 +155,7 @@ $reservas = $result->fetch_all(MYSQLI_ASSOC);
                             <td><?php echo $reserva['horaFim']; ?></td>
                             <td><?php echo $reserva['estado']; ?></td>
                             <td>
-                                <?php if ($reserva['dataReserva'] > date('Y-m-d')): ?>
+                            <?php if (($reserva['dataReserva'] > date('Y-m-d')) && ($reserva['estado'] === 'Confirmada')): ?>
                                     <a class="btn btn-secondary"
                                         href="editarReserva.php?idReserva=<?php echo $reserva['idReserva']; ?>&idSala=<?php echo $reserva['idSala']; ?>">Editar</a>
                                     <a class="btn" href="?eliminar=<?php echo $reserva['idReserva']; ?>"

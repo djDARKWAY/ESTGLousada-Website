@@ -6,8 +6,10 @@ require_once '../conexao.php';
 $conn = getDatabaseConnection();
 
 if (!isset($_SESSION['idUtilizador'])) {
-    header('Location: ../login/login.php');
+    header("Location: ../login/login.php");
     exit();
+} else if ($_SESSION['cargo'] !== "Professor") {
+    header("Location: ../error.php?code=403&message=Você não tem permissão para acessar esta área.");
 }
 
 if (!isset($_GET['idSala']) || !isset($_GET['idReserva'])) {
@@ -206,11 +208,11 @@ function getSalaImage($tipo)
                                         echo "<td style='color: darkred;'>Reservado</td>";
                                         echo "<td><input type='checkbox' disabled></td>";
                                     }
-                                    } else {
-                                        echo "<td style='color: green;'>Disponível</td>";
-                                        echo "<td><input type='checkbox' class='checkbox' data-id-sala='$idSala' data-hora='$horaFormatada'></td>";
-                                    }
-                                    
+                                } else {
+                                    echo "<td style='color: green;'>Disponível</td>";
+                                    echo "<td><input type='checkbox' class='checkbox' data-id-sala='$idSala' data-hora='$horaFormatada'></td>";
+                                }
+
 
                                 echo "</tr>";
                             }
@@ -242,7 +244,7 @@ function getSalaImage($tipo)
                                     $reservaId = $reservas[$horaFormatada]['reservaId'];
 
                                     if ($proprietario == $idUtilizador && $reservaId == $idReserva) {
-                                        echo "<td style='color: blue;'>Reservado (Você)</td>";
+                                        echo "<td style='color: blue;font-weight: bold;'>Reservado (Você)</td>";
                                         echo "<td><input type='checkbox' class='checkbox' data-id-sala='$idSala' data-hora='$horaFormatada' checked></td>";
                                     } else if ($proprietario == $idUtilizador) {
                                         echo "<td style='color: darkred; font-weight: bold; '>Reservado (Outra Reserva)</td>";
@@ -251,11 +253,11 @@ function getSalaImage($tipo)
                                         echo "<td style='color: red;'>Reservado</td>";
                                         echo "<td><input type='checkbox' disabled></td>";
                                     }
-                                    } else {
-                                        echo "<td style='color: green;'>Disponível</td>";
-                                        echo "<td><input type='checkbox' class='checkbox' data-id-sala='$idSala' data-hora='$horaFormatada'></td>";
-                                    }
-                                    
+                                } else {
+                                    echo "<td style='color: green;'>Disponível</td>";
+                                    echo "<td><input type='checkbox' class='checkbox' data-id-sala='$idSala' data-hora='$horaFormatada'></td>";
+                                }
+
 
                                 echo "</tr>";
                             }

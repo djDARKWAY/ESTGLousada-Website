@@ -9,7 +9,7 @@ if (!isset($_SESSION['idUtilizador'])) {
     header("Location: ../login/login.php");
     exit();
 } else if ($_SESSION['cargo'] !== "Professor") {
-    header ("Location: ../index.php");
+    header ("Location: ../error.php?code=403&message=Você não tem permissão para acessar esta área.");
 }
 
 

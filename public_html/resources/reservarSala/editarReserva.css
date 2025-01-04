@@ -91,10 +91,6 @@ body {
 }
 
 /* ==================== Time Table ==================== */
-.table-container {
-  width: 100%;
-}
-
 .time-table {
   width: 100%;
   border-collapse: collapse;
@@ -102,6 +98,7 @@ body {
   margin-bottom: 1rem;
   background-color: var(--card-background);
   border: 1px solid var(--border-color);
+  table-layout: fixed; /* Garante que todas as colunas tenham tamanho fixo */
 }
 
 .time-table th,
@@ -110,6 +107,9 @@ body {
   text-align: center;
   border-bottom: 1px solid var(--border-color);
   height: 2.5rem;
+  overflow: hidden; /* Impede que o texto extrapole */
+  text-overflow: ellipsis; /* Adiciona reticências se o texto for muito longo */
+  white-space: nowrap; /* Impede quebra de linha */
 }
 
 .time-table th {
@@ -121,9 +121,26 @@ body {
   color: var(--text-color);
 }
 
+.time-table th:nth-child(1),
+.time-table td:nth-child(1) {
+  width: 25%; /* Define largura fixa para a coluna de Hora */
+}
+
+.time-table th:nth-child(2),
+.time-table td:nth-child(2) {
+  width: 50%; /* Define largura fixa para a coluna de Disponibilidade */
+}
+
+.time-table th:nth-child(3),
+.time-table td:nth-child(3) {
+  width: 25%; /* Define largura fixa para a coluna de Ação */
+}
+
 .time-table input[type="checkbox"] {
   transform: scale(1.2);
+  margin: 0; /* Remove espaçamento adicional ao redor */
 }
+
 
 /* ==================== Buttons ==================== */
 .btn {

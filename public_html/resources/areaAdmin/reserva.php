@@ -26,9 +26,9 @@ $types = "";
 
 // Filtrar por ID da reserva
 if (!empty($_GET['idReserva'])) {
-    $whereClauses[] = "reserva.idReserva = ?";
-    $params[] = (int) $_GET['idReserva'];
-    $types .= "i";
+    $whereClauses[] = "reserva.idReserva LIKE ?";
+    $params[] = "%" . $_GET['idReserva'] . "%";
+    $types .= "s";
 }
 
 if (!empty($_GET['username'])) {
@@ -121,7 +121,7 @@ $result = $stmt->get_result();
 
                         <div class="filter-item">
                             <label for="estado">Estado</label>
-                            <select name="estado">
+                            <select name="estado" id="estado" onchange="this.form.submit()">
                                 <option value="">Todos</option>
                                 <option value="Confirmada" <?php echo ($_GET['estado'] ?? '') === 'Confirmada' ? 'selected' : ''; ?>>
                                     Confirmada</option>

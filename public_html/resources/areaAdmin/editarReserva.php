@@ -186,17 +186,17 @@ function getSalaImage($tipo)
                                     $reservaId = $reservas[$horaFormatada]['reservaId'];
 
                                     if ($proprietario == $idUtilizador && $reservaId == $idReserva) {
-                                        echo "<td>Reservado (Esta Reserva)</td>";
+                                        echo "<td style='color: blue;font-weight: bold;'>Reservado (Esta Reserva)</td>";
                                         echo "<td><input type='checkbox' class='checkbox' data-id-sala='$idSala' data-hora='$horaFormatada' checked></td>";
                                     } else if ($proprietario == $idUtilizador) {
-                                        echo "<td>Reservado (Outra Reserva deste utilizador)</td>";
+                                        echo "<td style='color: darkred; font-weight: bold; '>Reservado (Outra Reserva deste utilizador)</td>";
                                         echo "<td><input type='checkbox' disabled checked></td>";
                                     } else {
-                                        echo "<td>Reservado</td>";
+                                        echo "<td style='color: red;'>Reservado</td>";
                                         echo "<td><input type='checkbox' disabled></td>";
                                     }
                                 } else {
-                                    echo "<td>Disponível</td>";
+                                    echo "<td style='color: green;'>Disponível</td>";
                                     echo "<td><input type='checkbox' class='checkbox' data-id-sala='$idSala' data-hora='$horaFormatada'></td>";
                                 }
 
@@ -230,17 +230,17 @@ function getSalaImage($tipo)
                                     $reservaId = $reservas[$horaFormatada]['reservaId'];
 
                                     if ($proprietario == $idUtilizador && $reservaId == $idReserva) {
-                                        echo "<td>Reservado (Esta Reserva)</td>";
+                                        echo "<td style='color: blue;font-weight: bold;'>Reservado (Esta Reserva)</td>";
                                         echo "<td><input type='checkbox' class='checkbox' data-id-sala='$idSala' data-hora='$horaFormatada' checked></td>";
                                     } elseif ($proprietario == $idUtilizador) {
-                                        echo "<td>Reservado (Outra Reserva deste utilizador)</td>";
+                                        echo "<td style='color: darkred; font-weight: bold; '>Reservado (Outra Reserva deste utilizador)</td>";
                                         echo "<td><input type='checkbox' disabled checked></td>";
                                     } else {
-                                        echo "<td>Reservado</td>";
+                                        echo "<td style='color: red;'>Reservado</td>";
                                         echo "<td><input type='checkbox' disabled></td>";
                                     }
                                 } else {
-                                    echo "<td>Disponível</td>";
+                                    echo "<td style='color: green;'>Disponível</td>";
                                     echo "<td><input type='checkbox' class='checkbox' data-id-sala='$idSala' data-hora='$horaFormatada'></td>";
                                 }
 
@@ -266,7 +266,7 @@ function getSalaImage($tipo)
                 var horaInicio = "";
                 var horaFim = "";
 
-                checkboxes.forEach(function (checkbox, index) {
+                checkboxes.forEach(function(checkbox, index) {
                     var hora = checkbox.getAttribute('data-hora');
                     if (horaInicio === "") horaInicio = hora; // Define o início
 
@@ -275,12 +275,12 @@ function getSalaImage($tipo)
                         index === checkboxes.length - 1 ||
                         !isNextHour(checkbox, checkboxes[index + 1])
                     ) {
-                        horaFim = incrementHour(hora); 
+                        horaFim = incrementHour(hora);
                         horariosSelecionados.push({
                             horaInicio: horaInicio,
                             horaFim: horaFim,
                         });
-                        horaInicio = ""; 
+                        horaInicio = "";
                     }
                 });
 
@@ -288,8 +288,8 @@ function getSalaImage($tipo)
                     confirm(
                         "Tem a certeza de que deseja reservar para as seguintes horas: " +
                         horariosSelecionados
-                            .map((r) => r.horaInicio + " - " + r.horaFim)
-                            .join(", ") +
+                        .map((r) => r.horaInicio + " - " + r.horaFim)
+                        .join(", ") +
                         "?"
                     )
                 ) {
@@ -306,7 +306,7 @@ function getSalaImage($tipo)
                     data.append("idSala", "<?php echo $idSala; ?>");
                     data.append("dataReserva", document.getElementById("dataReserva").value);
 
-                    xhr.onload = function () {
+                    xhr.onload = function() {
                         if (xhr.status === 200) {
                             var response = JSON.parse(xhr.responseText);
                             if (response.success) {

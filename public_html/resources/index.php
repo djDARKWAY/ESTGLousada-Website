@@ -2,8 +2,13 @@
 error_reporting(0);
 include('./header/header.php');
 include('conexao.php');
+include('logs.php');
 $conn = getDatabaseConnection();
 
+$logFile = __DIR__ . '../../../logs/loginLogs.log';
+$utilizadorFile = __DIR__ . '../../../logs/utilizadorLogs.log';
+$adminFile = __DIR__ . '../../../logs/administradorLogs.log';
+$markerFile = __DIR__ . '../../../logs/verificarLogs.txt';
 
 $autenticado = false;
 if (isset($_SESSION['cargo'])) {
@@ -11,7 +16,7 @@ if (isset($_SESSION['cargo'])) {
 } elseif (isset($_COOKIE['remember_me'])) {
     $rememberMeToken = $_COOKIE['remember_me'];
 
-    $sql = "SELECT idUtilizador, cargo, nome, rememberToken FROM utilizador WHERE rememberToken IS NOT NULL";
+    $sql = "SELECT idUtilizador, cargo, nome, username, rememberToken FROM utilizador WHERE rememberToken IS NOT NULL";
     $stmt = $conn->prepare($sql);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -24,19 +29,43 @@ if (isset($_SESSION['cargo'])) {
             $_SESSION['cargo'] = $user['cargo'];
             $_SESSION['nome'] = $user['nome'];
             $autenticado = true;
+
+            writeLoginLog("Utilizador '" . $user['username'] . "' iniciou sessão com cookie 'remember_me'.");
             break;
         }
+    }
+}
+
+if ($_SESSION['cargo'] == 'Administrador') {
+    if (shouldCleanLogs($markerFile)) {
+        cleanOldLogs($logFile, $adminFile, $utilizadorFile, 30);
     }
 }
 
 // Eliminar sala
 if (isset($_GET['eliminarSala'])) {
     $idSala = (int) $_GET['eliminarSala'];
+    $idUtilizador = $_SESSION['idUtilizador'];
     $stmt = $conn->prepare("DELETE FROM sala WHERE idSala = ?");
     $stmt->bind_param("i", $idSala);
     $stmt->execute();
+
+    $sqlUtilizador = "SELECT username FROM utilizador WHERE idUtilizador = ?";
+    $stmtUtilizador = $conn->prepare($sqlUtilizador);
+    $stmtUtilizador->bind_param("i", $idUtilizador);
+    $stmtUtilizador->execute();
+    $resultUtilizador = $stmtUtilizador->get_result();
+    $username = $resultUtilizador->fetch_assoc()['username'];
+
+    writeAdminLog("Sala com ID $idSala foi eliminada pelo administrador '" . $username. "'.");
+    $_SESSION['mensagem_sucesso'] = "Sala eliminada com sucesso!";
     header("Location: " . $_SERVER['PHP_SELF']);
     exit();
+}
+
+if (isset($_SESSION['mensagem_sucesso'])) {
+    echo "<script>setTimeout(alert('" . $_SESSION['mensagem_sucesso'] . "'), 3000);</script>";
+    unset($_SESSION['mensagem_sucesso']);
 }
 
 // Receber os parâmetros dos filtros
@@ -68,7 +97,6 @@ if ($tipoFiltro && $tipoFiltro !== '' && $capacidadeFiltro) {
     $stmt->bind_param("i", $capacidadeFiltro);
 }
 
-// Executar a query
 $stmt->execute();
 $result = $stmt->get_result();
 $salas = [];
@@ -95,7 +123,6 @@ function verificarDisponibilidade($idSala, $conn)
     $totalHorasDia = 16;
     $dataFiltro = isset($_GET['data']) ? $_GET['data'] : date('Y-m-d', strtotime('+1 day'));
 
-    // Seleciona o estado da sala diretamente da tabela sala
     $sql = "SELECT estado FROM sala WHERE idSala = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("i", $idSala);
@@ -108,7 +135,7 @@ function verificarDisponibilidade($idSala, $conn)
 
         if ($estadoSala === 'Brevemente') {
             return 'BREVEMENTE';
-        } 
+        }
     }
 
     // Seleciona todas as reservas confirmadas para a data fornecida
@@ -128,14 +155,12 @@ function verificarDisponibilidade($idSala, $conn)
 
     // Calcula o total de horas reservadas
     while ($row = $result->fetch_assoc()) {
-        // Calcula a duração da reserva em horas
         $inicio = strtotime($row['horaInicio']);
         $fim = strtotime($row['horaFim']);
-        $duracaoHoras = ($fim - $inicio) / 3600; // Converte segundos para horas
+        $duracaoHoras = ($fim - $inicio) / 3600;
         $totalHorasReservadas += $duracaoHoras;
     }
 
-    // Verifica a disponibilidade
     $horasDisponiveis = $totalHorasDia - $totalHorasReservadas;
     return $horasDisponiveis > 0 ? 'DISPONÍVEL' : 'INDISPONÍVEL';
 }
@@ -158,16 +183,13 @@ function getSalaImage($tipo)
     return isset($imagens[$tipo]) ? $imagens[$tipo] : 'media/salaDefault.png';
 }
 
-// Definir o número de salas por página
 $salasPorPagina = 10;
 $paginaAtual = isset($_GET['pagina']) ? (int) $_GET['pagina'] : 1;
 $offset = ($paginaAtual - 1) * $salasPorPagina;
 
-// Adicionar limite e offset à query
 $sql .= " LIMIT ? OFFSET ?";
 $stmt = $conn->prepare($sql);
 
-// Verificar se os parâmetros existem e associá-los corretamente
 if ($tipoFiltro && $tipoFiltro !== '' && $capacidadeFiltro) {
     $stmt->bind_param("siii", $tipoFiltro, $capacidadeFiltro, $salasPorPagina, $offset);
 } elseif ($tipoFiltro && $tipoFiltro !== '') {
@@ -236,7 +258,7 @@ if ($result->num_rows > 0) {
                     <label>&nbsp;</label>
                     <button class="btn" onclick="resetFilters()">Limpar filtros</button>
                     <?php if ($_SESSION['cargo'] == 'Administrador'): ?>
-                        <a href="areaAdmin/adicionarSala.php" class="btn">Adicionar Sala</a>
+                        <button class="btn" onclick="window.location.href='areaAdmin/adicionarSala.php'">Adicionar Sala</button>
                     <?php endif; ?>
                 </div>
             </div>
@@ -281,7 +303,7 @@ if ($result->num_rows > 0) {
                                         Reservar
                                     </a>
                                 <?php else : ?>
-                                    <a 
+                                    <a
                                         class="btn reservar-btn" style="background-color: grey; cursor: not-allowed;">
                                         Reservar
                                     </a>

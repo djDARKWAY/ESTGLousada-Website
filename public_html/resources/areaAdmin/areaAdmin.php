@@ -122,7 +122,7 @@ $result = $stmt->get_result();
 
                         <div class="filter-item">
                             <label for="cargo">Cargo</label>
-                            <select name="cargo">
+                            <select name="cargo" id="cargo" onchange="this.form.submit()">
                                 <option value="">Selecione um cargo</option>
                                 <option value="Administrador" <?php echo isset($_GET['cargo']) && $_GET['cargo'] === 'Administrador' ? 'selected' : ''; ?>>Administrador</option>
                                 <option value="Professor" <?php echo isset($_GET['cargo']) && $_GET['cargo'] === 'Professor' ? 'selected' : ''; ?>>Professor</option>
@@ -131,7 +131,9 @@ $result = $stmt->get_result();
                     </div>
                 </div>
             </form>
-            <button class="btn">Adicionar novo utilizador</button>
+            <div class="button-aplicar">
+                            <button type="submit">Aplicar</button>
+                        </div>
         </div>
 
         <table class="user-table">

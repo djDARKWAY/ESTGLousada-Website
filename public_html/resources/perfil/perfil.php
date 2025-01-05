@@ -1,12 +1,14 @@
 <?php
 session_start();
+require_once '../conexao.php';
+require_once '../logs.php';
+$conn = getDatabaseConnection();
+
 if (!isset($_SESSION['idUtilizador'])) {
     header('Location: ../login/login.php');
     exit();
 }
 
-require_once '../conexao.php';
-$conn = getDatabaseConnection();
 $idUtilizador = $_SESSION['idUtilizador'];
 
 // Obter os dados do utilizador
@@ -59,7 +61,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif (!preg_match('/^(255|91|92|93|96)[0-9]{7}$/', $contacto)) {
         $erro = "O número deve começar por 255, 91, 92, 93 ou 96 e ter 9 dígitos.";
     } else {
-        if (isset($_FILES['imagemPerfil']) && $_FILES['imagemPerfil']['error'] == 0) {
+        if (isset($_POST['removerImagem']) && $_POST['removerImagem'] == 1) {
+            // Se a remoção foi solicitada, defina a imagem como NULL
+            $imagemPerfil = null;
+        } elseif (isset($_FILES['imagemPerfil']) && $_FILES['imagemPerfil']['error'] == 0) {
             $imagemTipo = $_FILES['imagemPerfil']['type'];
             if ($imagemTipo == 'image/png' || $imagemTipo == 'image/jpeg') {
                 $imagemPerfil = file_get_contents($_FILES['imagemPerfil']['tmp_name']);
@@ -74,11 +79,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmtUpdate->bind_param("sssssi", $username, $nome, $email, $contacto, $imagemPerfil, $idUtilizador);
 
         if ($stmtUpdate->execute()) {
-            $mensagem = "Informações atualizadas com sucesso!";
+            writeLoginLog("Utilizador '$username' atualizou o seu perfil.");
+            $_SESSION['mensagem_sucesso'] = "Informações atualizadas com sucesso!";
+            header("Location: " . $_SERVER['PHP_SELF']);
+            exit();
         } else {
+            writeLoginLog("O utilizador '$username' tentou atualizar o seu perfil, mas ocorreu um erro." . $stmtUpdate->error);
             $erro = "Erro ao atualizar informações!";
         }
     }
+}
+
+if (isset($_SESSION['mensagem_sucesso'])) {
+    $mensagem = $_SESSION['mensagem_sucesso'];
+    unset($_SESSION['mensagem_sucesso']);
 }
 ?>
 
@@ -106,43 +120,66 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <form method="POST" action="" enctype="multipart/form-data">
                 <h1><?php echo htmlspecialchars($utilizador['nome']); ?></h1>
                 <div class="imagemPerfil">
-                    <?php
-                    if ($utilizador['imagemPerfil']) {
-                        echo '<img src="data:image/jpeg;base64,' . base64_encode($utilizador['imagemPerfil']) . '"style="width: 180px; height: 180px; border-radius: 50%; object-fit: cover;">';
-                    } else {
-                        echo '<img src="../media/semFotoPerfil.png" alt="Foto de Perfil Padrão" style="width: 180px; height: 180px; border-radius: 50%; object-fit: cover;">';
-                    }
-                    ?>
+                    <img id="fotoPerfil"
+                        src="<?php echo $utilizador['imagemPerfil']
+                                    ? 'data:image/jpeg;base64,' . base64_encode($utilizador['imagemPerfil'])
+                                    : '../media/semFotoPerfil.png'; ?>"
+                        alt="Foto de Perfil"
+                        style="width: 180px; height: 180px; border-radius: 50%; object-fit: cover;">
                 </div>
+                <?php if ($utilizador['imagemPerfil']): ?>
+                    <button type="button" id="eliminarFoto" style="background-color: #e74c3c; color: white; margin-bottom: 15px;">Eliminar Foto</button>
+                <?php endif; ?>
                 <input type="file" id="imagemPerfil" name="imagemPerfil" accept="image/png, image/jpeg">
+
                 <label for="nome">Nome:</label>
-                <input type="text" id="nome" name="nome" value="<?php echo htmlspecialchars($utilizador['nome']); ?>"
-                    required>
+                <input type="text" id="nome" name="nome" value="<?php echo htmlspecialchars($utilizador['nome']); ?>" required>
 
                 <label for="username">Utilizador:</label>
-                <input type="text" id="username" name="username"
-                    value="<?php echo htmlspecialchars($utilizador['username']); ?>" required>
+                <input type="text" id="username" name="username" value="<?php echo htmlspecialchars($utilizador['username']); ?>" required>
 
                 <label for="email">Email:</label>
-                <input type="email" id="email" name="email"
-                    value="<?php echo htmlspecialchars($utilizador['email']); ?>" required>
+                <input type="email" id="email" name="email" value="<?php echo htmlspecialchars($utilizador['email']); ?>" required>
 
                 <label for="contacto">Contacto:</label>
-                <input type="text" id="contacto" name="contacto"
-                    value="<?php echo htmlspecialchars($utilizador['contacto']); ?>" required>
+                <input type="text" id="contacto" name="contacto" value="<?php echo htmlspecialchars($utilizador['contacto']); ?>" required>
 
                 <label for="confirmarPassword">Validar palavra-passe:</label>
                 <input type="password" id="confirmarPassword" name="confirmarPassword">
 
                 <button type="submit">Guardar alterações</button>
 
-                <button type="button" class="buttonSec" onclick="window.location.href='alterarPassword.php'">Alterar
-                    palavra-passe</button>
+                <button type="button" class="buttonSec" onclick="window.location.href='alterarPassword.php'">Alterar palavra-passe</button>
 
                 <a class="voltar" href="../index.php">◄ Voltar</a>
             </form>
         </div>
     </div>
+
+    <script>
+        //eliminar foto do lado do cliente
+        document.getElementById('eliminarFoto').addEventListener('click', function() {
+            // Substituir a imagem atual pela padrão
+            const fotoPerfil = document.getElementById('fotoPerfil');
+            fotoPerfil.src = "../media/semFotoPerfil.png";
+
+            // Limpar o campo de upload
+            const uploadInput = document.getElementById('imagemPerfil');
+            uploadInput.value = "";
+
+            // Criar um campo oculto para informar ao servidor sobre a remoção
+            let hiddenInput = document.getElementById('removerImagem');
+            if (!hiddenInput) {
+                hiddenInput = document.createElement('input');
+                hiddenInput.type = "hidden";
+                hiddenInput.name = "removerImagem";
+                hiddenInput.id = "removerImagem";
+                hiddenInput.value = "1";
+                document.querySelector('form').appendChild(hiddenInput);
+            }
+        });
+    </script>
+
 </body>
 
 </html>

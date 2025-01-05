@@ -1,18 +1,28 @@
 <?php
 session_start();
 require_once '../conexao.php';
-
-if (!isset($_SESSION['cargo']) || $_SESSION['cargo'] !== 'Administrador') {
-    header('Location: ../login/login.php');
-    exit();
-}
-// Verificação do ID da sala
-if (!isset($_GET['idSala'])) {
-    die('ID da sala não especificado.');
-}
+require_once '../logs.php';
 
 $conn = getDatabaseConnection();
 $idSala = intval($_GET['idSala']);
+
+$sqlAdmin = "SELECT username FROM utilizador WHERE idUtilizador = ?";
+$stmtAdmin = $conn->prepare($sqlAdmin);
+$stmtAdmin->bind_param("i", $_SESSION['idUtilizador']);
+$stmtAdmin->execute();
+$username = $stmtAdmin->get_result()->fetch_assoc()['username'];
+
+
+if (!isset($_SESSION['idUtilizador'])) {
+    header("Location: ../login/login.php");
+    exit();
+} else if ($_SESSION['cargo'] !== "Administrador") {
+    writeAdminLog("Utilizador '$username' tentou aceder à edição de sala (editarSala.php) com o ID '$idSala'.");
+    header ("Location: ../error.php?code=403&message=Você não tem permissão para acessar esta área.");
+    exit();
+}
+
+
 
 // Recuperação dos dados da sala
 $sql = "SELECT * FROM sala WHERE idSala = ?";
@@ -21,11 +31,19 @@ $stmt->bind_param("i", $idSala);
 $stmt->execute();
 $result = $stmt->get_result();
 
-if ($result->num_rows === 0) {
-    die('Sala não encontrada.');
+if (!isset($_GET['idSala']) || empty($_GET['idSala']) || ($_GET['idSala'] === "")) {
+    writeAdminLog("Administrador '$username' tentou aceder à página de editar sala sem especificar a sala (ID).");
+    header("Location: ../error.php?code=404&message=ID da sala não especificado.");
+    exit();
+} else if ($result->num_rows === 0) {
+    writeAdminLog("Administrador '$username' tentou aceder à página de editar sala, onde sala com ID '$idSala' não foi encontrada.");
+    header("Location: ../error.php?code=404&message=Sala não encontrada.");
+    exit();
 }
 
 $sala = $result->fetch_assoc();
+
+
 
 // Atualização dos dados da sala
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -55,14 +73,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmtUpdate->bind_param("sssisi", $nome, $tipo, $descricao, $capacidade, $estado, $idSala);
 
         if ($stmtUpdate->execute()) {
+            writeAdminLog("Administrador '$username' atualizou a sala com o ID '$idSala'.");
             $sucesso = "Sala atualizada com sucesso!";
             // Recarregar os dados atualizados
+
             $sala['nome'] = $nome;
             $sala['tipo'] = $tipo;
             $sala['descricao'] = $descricao;
             $sala['capacidade'] = $capacidade;
             $sala['estado'] = $estado;
         } else {
+            writeAdminLog("Administrador '$username' tentou atualizar a sala com o ID '$idSala', mas ocorreu um erro: " . $stmtUpdate->error);
             $erro = "Erro ao atualizar a sala. Por favor, tente novamente.";
         }
     }

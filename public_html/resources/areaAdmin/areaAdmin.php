@@ -1,21 +1,46 @@
 <?php
 require_once '../conexao.php';
 include('../header/header.php');
+include_once '../logs.php';
 
 $conn = getDatabaseConnection();
 
-if (!isset($_SESSION['cargo']) || $_SESSION['cargo'] !== 'Administrador') {
-    header('Location: ../login/login.php');
-    exit();
-}
+$sqlAdmin = "SELECT username FROM utilizador WHERE idUtilizador = ?";
+$stmtAdmin = $conn->prepare($sqlAdmin);
+$stmtAdmin->bind_param("i", $_SESSION['idUtilizador']);
+$stmtAdmin->execute();
+$username = $stmtAdmin->get_result()->fetch_assoc()['username'];
+
 
 // Eliminar utilizador
 if (isset($_GET['eliminar'])) {
     $idUtilizador = (int) $_GET['eliminar'];
-    $stmt = $conn->prepare("DELETE FROM utilizador WHERE idUtilizador = ?");
+    $sql = "SELECT username FROM utilizador WHERE idUtilizador = ?";
+    $stmt = $conn->prepare($sql);
     $stmt->bind_param("i", $idUtilizador);
     $stmt->execute();
+    $usernameUtilizador = $stmt->get_result()->fetch_assoc()['username'];
+
+    $stmt = $conn->prepare("DELETE FROM utilizador WHERE idUtilizador = ?");
+    $stmt->bind_param("i", $idUtilizador);
+    if ($stmt->execute()) {
+        writeAdminLog("Administrador '$username' eliminou o utilizador '$usernameUtilizador'.");
+        $_SESSION['mensagem_sucesso'] = "Utilizador eliminado com sucesso!";
+    } else {
+        writeAdminLog("Administrador '$username' tentou eliminar o utilizador '$usernameUtilizador', mas ocorreu um erro: " . $stmt->error);
+        echo "<script>alert('Erro ao eliminar o utilizador.');</script>";
+    }
+
     header("Location: " . $_SERVER['PHP_SELF']);
+    exit();
+}
+
+if (!isset($_SESSION['idUtilizador'])) {
+    header("Location: ../login/login.php");
+    exit();
+} else if ($_SESSION['cargo'] !== "Administrador") {
+    writeAdminLog("Utilizador '$username' tentou aceder à gestão de utilizadores (areaAdmin.php).");
+    header ("Location: ../error.php?code=403&message=Você não tem permissão para acessar esta área.");
     exit();
 }
 

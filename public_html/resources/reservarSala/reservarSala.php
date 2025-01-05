@@ -1,15 +1,25 @@
 <?php
 session_start();
 error_reporting(0);
-
+include('../logs.php');
 include('../conexao.php');
 $conn = getDatabaseConnection();
+
+date_default_timezone_set('Europe/Lisbon');
+
+$sqllUtilizador = "SELECT username FROM utilizador WHERE idUtilizador = ?";
+$stmtUtilizador = $conn->prepare($sqllUtilizador);
+$stmtUtilizador->bind_param("i", $_SESSION['idUtilizador']);
+$stmtUtilizador->execute();
+$username = $stmtUtilizador->get_result()->fetch_assoc()['username'];
 
 if (!isset($_SESSION['idUtilizador'])) {
     header("Location: ../login/login.php");
     exit();
 } else if ($_SESSION['cargo'] !== "Professor") {
-    header ("Location: ../error.php?code=403&message=Você não tem permissão para acessar esta área.");
+    writeAdminLog("Administrador '$username' tentou aceder a reservarSala.php.");
+    header("Location: ../error.php?code=403&message=Você não tem permissão para acessar esta área.");
+    exit();
 }
 
 
@@ -30,12 +40,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->bind_param("iissss", $idSala, $idUtilizador, $dataReserva, $horaInicio, $horaFim, $estado);
 
             if ($stmt->execute()) {
+                writeUtilizadorLog("Utilizador '$username' reservou a sala com ID '$idSala' para o dia '$dataReserva' das $horaInicio às $horaFim.");
                 $response = ['success' => true];
             } else {
+                writeUtilizadorLog("Utilizador '$username' tentou reservar a sala com ID '$idSala' para o dia '$dataReserva' das $horaInicio às $horaFim, mas ocorreu um erro: " . $stmt->error);
                 $response = ['success' => false];
             }
         }
     } else {
+        writeUtilizadorLog("Utilizador '$username' tentou reservar a sala '$idSala' sem especificar uma sala ou horários.");
         $response = ['success' => false];
     }
 
@@ -43,15 +56,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit();
 }
 
-if (!isset($_GET['idSala']) || empty($_GET['idSala'])) {
-    header("Location: ../error.php?code=400&message=Erro ao processar a reserva. Por favor, tente novamente.");
-}
-
 $idSala = $_GET['idSala'];
-$dataReserva = isset($_GET['dataReserva']) ? $_GET['dataReserva'] : date('Y-m-d');
+$dataReserva = isset($_GET['dataReserva']) ? $_GET['dataReserva'] : date('Y-m-d', strtotime('+1 day'));
 
 
 if (!DateTime::createFromFormat('Y-m-d', $dataReserva) || DateTime::getLastErrors()['warning_count'] > 0 || DateTime::getLastErrors()['error_count'] > 0 || $dataReserva <= date('Y-m-d')) {
+    writeLoginLog("Utilizador '$username' tentou aceder à página de reservar sala com uma data inválida.");
     header("Location: ../error.php?code=400&message=Data de reserva inválida.");
 }
 
@@ -65,10 +75,15 @@ $result = $stmt->get_result();
 
 $sala = $result->fetch_assoc();
 
-if ($result->num_rows === 0) {
+if (!isset($_GET['idSala']) || empty($_GET['idSala'])) {
+    writeUtilizadorLog("Utilizador '$username' tentou aceder à página de reservar sala sem especificar a sala.");
+    header("Location: ../error.php?code=400&message=Erro ao processar a reserva. Por favor, tente novamente.");
+} else if ($result->num_rows === 0) {
+    writeUtilizadorLog("Utilizador '$username' tentou aceder à página de reservar sala a partir de um idSala inválido ('" . $_GET['idSala'] . "').");
     header("Location: ../error.php?code=404&message=Sala não encontrada.");
 } else if ($sala['estado'] !== "Disponível") {
-    header ("Location: ../error.php?code=403&message=Sala indisponível por tempo indeterminado para reserva.");
+    writeUtilizadorLog("Utilizador '$username' tentou aceder à página de reservar sala, sala com ID '$idSala' que se encontra indisponível para.");
+    header("Location: ../error.php?code=403&message=Sala indisponível por tempo indeterminado para reserva.");
 }
 
 //$sala = $result->fetch_assoc();
@@ -248,7 +263,7 @@ function getSalaImage($tipo)
                 var horaInicio = "";
                 var horaFim = "";
 
-                checkboxes.forEach(function (checkbox, index) {
+                checkboxes.forEach(function(checkbox, index) {
                     var hora = checkbox.getAttribute('data-hora');
                     if (horaInicio === "") {
                         horaInicio = hora;
@@ -275,7 +290,7 @@ function getSalaImage($tipo)
                     data.append("dataReserva", dataReservaSelecionada);
                     data.append("reservas", JSON.stringify(horariosSelecionados));
 
-                    xhr.onload = function () {
+                    xhr.onload = function() {
                         if (xhr.status === 200) {
 
                             var response = JSON.parse(xhr.responseText);

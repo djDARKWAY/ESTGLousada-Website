@@ -49,6 +49,7 @@ if (isset($_GET['eliminarSala'])) {
     $stmt = $conn->prepare("DELETE FROM sala WHERE idSala = ?");
     $stmt->bind_param("i", $idSala);
     $stmt->execute();
+    $stmt->close();
 
     $sqlUtilizador = "SELECT username FROM utilizador WHERE idUtilizador = ?";
     $stmtUtilizador = $conn->prepare($sqlUtilizador);
@@ -57,14 +58,14 @@ if (isset($_GET['eliminarSala'])) {
     $resultUtilizador = $stmtUtilizador->get_result();
     $username = $resultUtilizador->fetch_assoc()['username'];
 
-    writeAdminLog("Sala com ID $idSala foi eliminada pelo administrador '" . $username. "'.");
+    writeAdminLog("Sala com ID '$idSala' foi eliminada pelo administrador '" . $username. "'.");
     $_SESSION['mensagem_sucesso'] = "Sala eliminada com sucesso!";
     header("Location: " . $_SERVER['PHP_SELF']);
     exit();
 }
 
 if (isset($_SESSION['mensagem_sucesso'])) {
-    echo "<script>setTimeout(alert('" . $_SESSION['mensagem_sucesso'] . "'), 3000);</script>";
+    echo "<script>alert('" . $_SESSION['mensagem_sucesso'] . "');</script>";
     unset($_SESSION['mensagem_sucesso']);
 }
 

@@ -47,3 +47,47 @@
 [2025-01-04 01:10:45] INFO: User 'loosaz' logged in.
 [2025-01-04 03:00:25] INFO: Utilizador 'loosaz' terminou sessão.
 [2025-01-04 03:02:46] INFO: User 'loosaz' logged in.
+[2025-01-04 20:37:52] INFO: Utilizador 'roberto' terminou sessão.
+[2025-01-04 20:37:58] WARNING: Failed login attempt for username 'roberto'.
+[2025-01-04 20:38:02] INFO: User 'roberto' logged in.
+[2025-01-04 20:50:36] INFO: User 'roberto' logged in.
+[2025-01-04 20:50:41] INFO: Utilizador 'roberto' terminou sessão.
+[2025-01-04 20:50:52] INFO: User 'loosaz' logged in.
+[2025-01-04 21:16:47] INFO: Utilizador 'roberto' tentou aceder à página de reservar sala com uma data inválida.
+[2025-01-04 23:28:57] INFO: User 'roberto' logged in.
+[2025-01-05 00:18:53] INFO: Utilizador 'rob_' registou-se no website.
+[2025-01-05 00:19:20] INFO: Utilizador 'roberto' terminou sessão.
+[2025-01-05 01:09:28] INFO: Tentativa de recuperação de password sem reCAPTCHA com o seguinte email: dawdwadwa@gmail.com
+[2025-01-05 01:10:46] INFO: Tentativa de recuperação de password sem reCAPTCHA com o seguinte email: dawdwadwa@gmail.com.
+[2025-01-05 01:11:18] WARNING: Tentativa de recuperação de password sem reCAPTCHA com o seguinte email: dawdwadwa@gmail.com.
+[2025-01-05 01:13:22] INFO: Email de recuperação de password enviado para o email: robertobaptistawork@gmail.com
+[2025-01-05 01:14:06] INFO: User 'roberto' logged in.
+[2025-01-05 01:23:54] INFO: Utilizador 'loosaz' atualizou as suas informações.
+[2025-01-05 01:31:45] INFO: Utilizador 'loosaz' atualizou as suas informações.
+[2025-01-05 01:33:04] INFO: Utilizador 'loosaz' atualizou as suas informações.
+[2025-01-05 01:42:01] INFO: Utilizador 'loosaz' atualizou as suas informações.
+[2025-01-05 01:42:08] INFO: Utilizador 'loosaz' atualizou as suas informações.
+[2025-01-05 01:42:45] INFO: Utilizador 'loosaz' atualizou as suas informações.
+[2025-01-05 01:42:48] INFO: Utilizador 'loosaz' atualizou as suas informações.
+[2025-01-05 01:42:50] INFO: Utilizador 'loosaz' atualizou as suas informações.
+[2025-01-05 01:44:12] INFO: Utilizador 'loosaz' atualizou as suas informações.
+[2025-01-05 01:44:15] INFO: Utilizador 'loosaz' atualizou as suas informações.
+[2025-01-05 01:45:11] INFO: Utilizador 'loosaz' atualizou as suas informações.
+[2025-01-05 01:45:15] INFO: Utilizador 'loosaz' atualizou as suas informações.
+[2025-01-05 01:45:22] INFO: Utilizador 'loosaz' atualizou as suas informações.
+[2025-01-05 01:45:24] INFO: Utilizador 'loosaz' atualizou as suas informações.
+[2025-01-05 01:45:29] INFO: Utilizador 'loosaz' atualizou as suas informações.
+[2025-01-05 01:45:32] INFO: Utilizador 'loosaz' atualizou as suas informações.
+[2025-01-05 01:45:51] INFO: Utilizador 'loosaz' atualizou as suas informações.
+[2025-01-05 01:46:31] INFO: Utilizador 'loosaz' atualizou as suas informações.
+[2025-01-05 01:50:07] INFO: Utilizador 'loosaz' atualizou as suas informações.
+[2025-01-05 01:50:18] INFO: Utilizador 'loosaz' atualizou as suas informações.
+[2025-01-05 01:54:06] INFO: Utilizador 'loosaz' atualizou as suas informações.
+[2025-01-05 01:54:18] INFO: Utilizador 'loosaz' atualizou as suas informações.
+[2025-01-05 02:02:27] INFO: Utilizador 'loosaz' atualizou as suas informações.
+[2025-01-05 02:58:59] INFO: User 'loosaz' logged in.
+[2025-01-05 02:59:19] INFO: Utilizador 'loosaz' atualizou o seu perfil.
+[2025-01-05 03:07:19] INFO: Utilizador 'loosaz' alterou a palavra-passe.
+[2025-01-05 04:09:18] INFO: Utilizador 'roberto' atualizou o seu perfil.
+[2025-01-05 04:09:30] INFO: Utilizador 'roberto' atualizou o seu perfil.
+[2025-01-05 03:29:18] INFO: Utilizador 'roberto' terminou sessão.

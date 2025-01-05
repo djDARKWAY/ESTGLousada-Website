@@ -1,24 +1,30 @@
 <?php
 error_reporting(0);
 session_start();
+include_once '../logs.php';
 require_once '../conexao.php';
 
 $conn = getDatabaseConnection();
+
+$sqllUtilizador = "SELECT username FROM utilizador WHERE idUtilizador = ?";
+$stmtUtilizador = $conn->prepare($sqllUtilizador);
+$stmtUtilizador->bind_param("i", $_SESSION['idUtilizador']);
+$stmtUtilizador->execute();
+$username = $stmtUtilizador->get_result()->fetch_assoc()['username'];
 
 if (!isset($_SESSION['idUtilizador'])) {
     header("Location: ../login/login.php");
     exit();
 } else if ($_SESSION['cargo'] !== "Professor") {
+    writeAdminLog("Administrador '$username' tentou aceder a editarReserva.php.");
     header("Location: ../error.php?code=403&message=Você não tem permissão para acessar esta área.");
-}
-
-if (!isset($_GET['idSala']) || !isset($_GET['idReserva'])) {
-    header('Location: ../index.php');
     exit();
 }
 
+
 $idReserva = (int) $_GET['idReserva'];
 $idUtilizador = $_SESSION['idUtilizador'];
+$idSala = (int) $_GET['idSala'];
 
 // Verificar se a reserva pertence ao utilizador logado
 $sqlVerificaReserva = "SELECT idUtilizador FROM reserva WHERE idReserva = ? AND dataReserva > CURDATE()";
@@ -31,11 +37,10 @@ $reserva = $resultVerificaReserva->fetch_assoc();
 
 if ($resultVerificaReserva->num_rows > 0) {
     if ($reserva['idUtilizador'] !== $idUtilizador) {
+        writeUtilizadorLog("Utilizador '$username' tentou editar a reserva com o ID '$idReserva' que pertence a outro utilizador.");
         header('Location: minhaReserva.php');
     }
-} else {
-    header('Location: ../error.php?code=404&message=Reserva não encontrada.');
-}
+} 
 
 $stmtVerificaReserva->close();
 
@@ -47,13 +52,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $dataReserva = $_POST['dataReserva'];
 
     if (count($reservas) === 1) {
-        // Atualizar a reserva existente com o primeiro horário
         $sqlUpdate = "UPDATE reserva SET horaInicio = ?, horaFim = ? WHERE idReserva = ?";
         $stmtUpdate = $conn->prepare($sqlUpdate);
         $stmtUpdate->bind_param("ssi", $reservas[0]['horaInicio'], $reservas[0]['horaFim'], $idReserva);
-        $stmtUpdate->execute();
+        
+        if ($stmtUpdate->execute()) {
+            writeUtilizadorLog("Utilizador '$username' editou a reserva com o ID '$idReserva' para o horário " . $reservas[0]['horaInicio'] . " - " . $reservas[0]['horaFim'] . ".");
+        } else {
+            writeUtilizadorLog("Utilizador '$username' tentou editar a reserva com o ID '$idReserva', mas ocorreu um erro: " . $stmtUpdate->error);
+            echo json_encode(['success' => false, 'message' => 'Erro ao editar a reserva.']);
+            exit();
+        }
         $stmtUpdate->close();
     } elseif (count($reservas) > 1) {
+        writeUtilizadorLog("Utilizador '$username' tentou editar a reserva com o ID '$idReserva', mas ela contém múltiplos horários separados por horas.");
         echo json_encode(['success' => false, 'message' => 'Não é possível reservar mais de um horário separados por horas.']);
         exit();
     }
@@ -62,10 +74,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit();
 }
 
-$idUtilizador = $_SESSION['idUtilizador'];
-$idSala = (int) $_GET['idSala'];
-$idReserva = (int) $_GET['idReserva'];
-
 // Buscar informações da sala
 $sqlSala = "SELECT idSala, nome, tipo, descricao, capacidade, estado FROM sala WHERE idSala = ?";
 $stmtSala = $conn->prepare($sqlSala);
@@ -73,8 +81,12 @@ $stmtSala->bind_param("i", $idSala);
 $stmtSala->execute();
 $resultSala = $stmtSala->get_result();
 
-if ($resultSala->num_rows === 0) {
-    die("Sala não encontrada.");
+if (!isset($_GET['idSala']) || !isset($_GET['idReserva']) || ($_GET['idSala'] === "" || $_GET['idReserva'] === "")) {
+    writeUtilizadorLog("Utilizador '$username' tentou aceder à página de editar sala sem especificar o idSala ('" . $_GET['idSala'] . "') ou idReserva ('" . $_GET['idReserva'] . "').");
+    header("Location: ../error.php?code=400&message=Erro ao processar a reserva. Por favor, tente novamente.");
+} else if ($resultSala->num_rows === 0) {
+    writeUtilizadorLog("Utilizador '$username' tentou aceder à página de editar reserva a partir de um idSala inválido ('" . $_GET['idSala'] . "').");
+    header("Location: ../error.php?code=404&message=Sala não encontrada.");
 }
 
 $sala = $resultSala->fetch_assoc();
@@ -91,6 +103,7 @@ $reserva = $resultReserva->fetch_assoc();
 $dataReserva = $reserva['dataReserva'];
 
 if (($dataReserva <= date('Y-m-d')) || ($reserva['estado'] !== 'Confirmada')) {
+    writeUtilizadorLog("Utilizador '$username' tentou editar a reserva com o ID '$idReserva' que é passada ou cancelada.");
     header('Location: ../error.php?code=403&message=Não é possível editar reservas passadas ou canceladas.');
 }
 
@@ -325,7 +338,7 @@ function getSalaImage($tipo)
                         if (xhr.status === 200) {
                             var response = JSON.parse(xhr.responseText);
                             if (response.success) {
-                                alert("Reserva realizada com sucesso!");
+                                alert("Reserva atualizada com sucesso!");
                                 window.location.reload();
                             } else {
                                 alert(response.message || "Erro ao realizar a reserva.");

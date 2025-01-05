@@ -1,15 +1,24 @@
 <?php
 error_reporting(0);
+include_once '../logs.php';
 include('../header/header.php');
 require_once '../conexao.php';
 
 $conn = getDatabaseConnection();
 
+$sqllUtilizador = "SELECT username FROM utilizador WHERE idUtilizador = ?";
+$stmtUtilizador = $conn->prepare($sqllUtilizador);
+$stmtUtilizador->bind_param("i", $_SESSION['idUtilizador']);
+$stmtUtilizador->execute();
+$username = $stmtUtilizador->get_result()->fetch_assoc()['username'];
+
 if (!isset($_SESSION['idUtilizador'])) {
     header("Location: ../login/login.php");
     exit();
 } else if ($_SESSION['cargo'] !== "Professor") {
+    writeAdminLog("Administrador '$username' tentou aceder a minhaReserva.php.");
     header ("Location: ../error.php?code=403&message=Você não tem permissão para acessar esta área.");
+    exit();
 }
 
 // Eliminar reserva
@@ -17,9 +26,21 @@ if (isset($_GET['eliminar'])) {
     $idReserva = (int) $_GET['eliminar'];
     $stmt = $conn->prepare("UPDATE `reserva` SET `estado` = 'Cancelada' WHERE idReserva = ?");
     $stmt->bind_param("i", $idReserva);
-    $stmt->execute();
-    header("Location: " . $_SERVER['PHP_SELF']);
-    exit();
+    
+    if ($stmt->execute()) {
+        writeUtilizadorLog("Utilizador '$username' eliminou a reserva com o ID '$idReserva'.");
+        $_SESSION['mensagem_sucesso'] = "Reserva eliminada com sucesso!";
+        header("Location: " . $_SERVER['PHP_SELF']);
+        exit();
+    } else {
+        writeUtilizadorLog("Utilizador '$username' tentou eliminar a reserva com o ID '$idReserva', mas ocorreu um erro: " . $stmt->error);
+        echo "<script>alert('Erro ao eliminar a reserva.');</script>";
+    }
+}
+
+if (isset($_SESSION['mensagem_sucesso'])) {
+    echo "<script>alert('" . $_SESSION['mensagem_sucesso'] . "');</script>";
+    unset($_SESSION['mensagem_sucesso']);
 }
 
 $whereClauses[] = "reserva.idUtilizador = ?";

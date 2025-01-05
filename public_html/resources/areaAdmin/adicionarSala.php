@@ -2,11 +2,22 @@
 error_reporting(0);
 session_start();
 require_once '../conexao.php';
+require_once '../logs.php';
 
 $conn = getDatabaseConnection();
 
-if (!isset($_SESSION['cargo']) || $_SESSION['cargo'] !== 'Administrador') {
-    header('Location: ../login/login.php');
+$sqlAdmin = "SELECT username FROM utilizador WHERE idUtilizador = ?";
+$stmtAdmin = $conn->prepare($sqlAdmin);
+$stmtAdmin->bind_param("i", $_SESSION['idUtilizador']);
+$stmtAdmin->execute();
+$username = $stmtAdmin->get_result()->fetch_assoc()['username'];
+
+if (!isset($_SESSION['idUtilizador'])) {
+    header("Location: ../login/login.php");
+    exit();
+} else if ($_SESSION['cargo'] !== "Administrador") {
+    writeAdminLog("Utilizador '$username' tentou aceder à página de adicionar sala (adicionarSala.php).");
+    header ("Location: ../error.php?code=403&message=Você não tem permissão para acessar esta área.");
     exit();
 }
 
@@ -35,8 +46,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->bind_param("sssis", $nome, $tipo, $descricao, $capacidade, $estado);
 
         if ($stmt->execute()) {
+            writeAdminLog("Administrador '$username' adicionou a sala '$nome' com sucesso!");
             $sucesso = "Sala adicionada com sucesso!";
         } else {
+            writeAdminLog("Administrador '$username' tentou adicionar a sala '$nome', mas ocorreu um erro: " . $stmt->error);
             $erro = "Erro ao adicionar a sala. Por favor, tente novamente.";
         }
     }

@@ -1,14 +1,10 @@
 <?php
 session_start();
 require_once '../conexao.php';
+require_once '../logs.php';
 
 
 $conn = getDatabaseConnection();
-
-if (!isset($_SESSION['cargo']) || $_SESSION['cargo'] !== 'Administrador') {
-    header('Location: ../login/login.php');
-    exit();
-}
 
 $id = $_GET['id'];
 
@@ -18,6 +14,21 @@ $stmt->bind_param("i", $id);
 $stmt->execute();
 $result = $stmt->get_result();
 $utilizador = $result->fetch_assoc();
+
+$sqlAdmin = "SELECT username FROM utilizador WHERE idUtilizador = ?";
+$stmtAdmin = $conn->prepare($sqlAdmin);
+$stmtAdmin->bind_param("i", $_SESSION['idUtilizador']);
+$stmtAdmin->execute();
+$usernameAdmin = $stmtAdmin->get_result()->fetch_assoc()['username'];
+
+if (!isset($_SESSION['idUtilizador'])) {
+    header("Location: ../login/login.php");
+    exit();
+} else if ($_SESSION['cargo'] !== "Administrador") {
+    writeAdminLog("Utilizador '$usernameAdmin' tentou aceder à página editarUtilizador.php para o utilizador com o ID '$id'.");
+    header ("Location: ../error.php?code=403&message=Você não tem permissão para acessar esta área.");
+    exit();
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nome = ($_POST['nome']);
@@ -54,7 +65,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif (($_FILES['imagemPerfil']['size'] > 5000000)) {
         $erro = "O tamanho da imagem não pode ser maior que 5MB!";
     } else {
-        if (isset($_FILES['imagemPerfil']) && $_FILES['imagemPerfil']['error'] == 0) {
+        if (isset($_POST['removerImagem']) && $_POST['removerImagem'] == 1) {
+            $imagemPerfil = null;
+        } elseif (isset($_FILES['imagemPerfil']) && $_FILES['imagemPerfil']['error'] == 0) {
             $imagemTipo = $_FILES['imagemPerfil']['type'];
             if ($imagemTipo == 'image/png' || $imagemTipo == 'image/jpeg') {
                 $imagemPerfil = file_get_contents($_FILES['imagemPerfil']['tmp_name']);
@@ -66,10 +79,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $sql = "UPDATE utilizador SET nome = ?, username = ?, email = ?, contacto = ?, imagemPerfil = ?, cargo = ? WHERE idUtilizador = ?";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("ssssssi", $nome, $username, $email, $contacto, $imagemPerfil, $cargo, $id);
-        $stmt->execute();
-        header('Location: areaAdmin.php');
-        exit();
+
+        if ($stmt->execute()) {
+            writeAdminLog("O administrador '$usernameAdmin' editou o utilizador '$username'.");
+            $_SESSION['mensagem_sucesso'] = "Informações atualizadas com sucesso!";
+            header("Location: " . $_SERVER['PHP_SELF'] . "?id=" . $id);
+            exit();
+        } else {
+            writeAdminLog("O administrador '$usernameAdmin' ocorreu um erro ao editar o utilizador '$username'. Erro: " . $stmt->error);
+            $erro = "Erro ao editar utilizador.";
+        }
     }
+}
+
+if (isset($_SESSION['mensagem_sucesso'])) {
+    $mensagem = $_SESSION['mensagem_sucesso'];
+    unset($_SESSION['mensagem_sucesso']);
 }
 ?>
 <!DOCTYPE html>
@@ -86,19 +111,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="container">
         <div class="register-box">
             <h1>Editar Utilizador</h1>
+
+            
             <form method="POST" enctype="multipart/form-data">
                 <div class="imagemPerfil">
                     <?php
                     if ($utilizador['imagemPerfil']) {
-                        echo '<img src="data:image/jpeg;base64,' . base64_encode($utilizador['imagemPerfil']) . '"style="width: 180px; height: 180px; border-radius: 50%; object-fit: cover;">';
+                        echo '<img id="fotoPerfil" src="data:image/jpeg;base64,' . base64_encode($utilizador['imagemPerfil']) . '" style="width: 180px; height: 180px; border-radius: 50%; object-fit: cover;">';
                     } else {
-                        echo '<img src="../media/semFotoPerfil.png" alt="Foto de Perfil Padrão" style="width: 180px; height: 180px; border-radius: 50%; object-fit: cover;">';
+                        echo '<img id="fotoPerfil" src="../media/semFotoPerfil.png" alt="Foto de Perfil Padrão" style="width: 180px; height: 180px; border-radius: 50%; object-fit: cover;">';
                     }
                     ?>
                 </div>
+                <?php if ($utilizador['imagemPerfil']): ?>
+                    <button type="button" id="eliminarFoto" style="background-color: #e74c3c; color: white; margin-bottom: 15px;">Eliminar Foto</button>
+                <?php endif; ?>
                 <input type="file" id="imagemPerfil" name="imagemPerfil" accept="image/png, image/jpeg">
 
-                <label for="username">Utilizador:</label>
+                <label for="username">Username:</label>
                 <input type="text" id="username" name="username" required
                     value="<?php echo $utilizador['username']; ?>">
 
@@ -121,10 +151,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 <button type="submit" name="submit">Editar</button>
 
-                <a class="voltar" href="../index.php">◄ Voltar</a>
+                <a class="voltar" href="areaAdmin.php">◄ Voltar</a>
             </form>
+            <?php if (isset($mensagem)): ?>
+                <p style="color:lightgreen; font-weight:bold; text-align:center; margin-top: 15px;"><?php echo $mensagem; ?></p>
+            <?php endif; ?>
+            <?php if (isset($erro)): ?>
+                <p style="color:red; font-weight:bold; text-align:center; margin-top: 15px;"><?php echo $erro; ?></p>
+            <?php endif; ?>
         </div>
     </div>
+    <script>
+        //eliminar foto do lado do cliente
+        document.getElementById('eliminarFoto').addEventListener('click', function() {
+            // Substituir a imagem atual pela padrão
+            const fotoPerfil = document.getElementById('fotoPerfil');
+            fotoPerfil.src = "../media/semFotoPerfil.png";
+
+            // Limpar o campo de upload
+            const uploadInput = document.getElementById('imagemPerfil');
+            uploadInput.value = "";
+
+            // Criar um campo oculto para informar ao servidor sobre a remoção
+            let hiddenInput = document.getElementById('removerImagem');
+            if (!hiddenInput) {
+                hiddenInput = document.createElement('input');
+                hiddenInput.type = "hidden";
+                hiddenInput.name = "removerImagem";
+                hiddenInput.id = "removerImagem";
+                hiddenInput.value = "1";
+                document.querySelector('form').appendChild(hiddenInput);
+            }
+        });
+    </script>
 </body>
 
 </html>

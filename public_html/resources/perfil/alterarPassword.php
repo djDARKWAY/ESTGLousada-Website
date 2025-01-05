@@ -1,6 +1,6 @@
 <?php
 session_start();
-
+require_once '../logs.php';
 require_once '../conexao.php';
 $conn = getDatabaseConnection();
 $idUtilizador = $_SESSION['idUtilizador'];
@@ -11,12 +11,13 @@ if (!isset($_SESSION['idUtilizador'])) {
 }
 
 // Obter dados do utilizador
-$sql = "SELECT salt, password FROM utilizador WHERE idUtilizador = ?";
+$sql = "SELECT username, salt, password FROM utilizador WHERE idUtilizador = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $idUtilizador);
 $stmt->execute();
 $result = $stmt->get_result();
 $utilizador = $result->fetch_assoc();
+$username = $utilizador['username'];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $passwordAntiga = $_POST['passwordAntiga'];
@@ -26,14 +27,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $salt = $utilizador['salt'];
     $hashedPassword = $utilizador['password'];
 
+    $verificacaoPassword = "/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/";
+
     if (empty($passwordAntiga) || empty($novaPassword) || empty($confirmarNovaPassword)) {
         $erro = "Todos os campos são obrigatórios!";
     } elseif (!password_verify($salt . $passwordAntiga, $hashedPassword)) {
         $erro = "A palavra-passe antiga está incorreta!";
     } elseif ($novaPassword !== $confirmarNovaPassword) {
         $erro = "As novas palavras-passe não coincidem!";
-    } elseif (strlen($novaPassword) < 8) {
-        $erro = "A nova palavra-passe deve ter pelo menos 8 caracteres.";
+    } elseif (!preg_match($verificacaoPassword, $novaPassword)) {
+        $erro = "A palavra-passe deve ter 8 caracteres, maiúsculas, minúsculas, números e caracteres especiais.";
     } else {
 
         // Atualizar a palavra-passe
@@ -45,8 +48,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmtUpdate->bind_param("ssi", $novaPasswordHash, $salt, $idUtilizador);
 
         if ($stmtUpdate->execute()) {
+            writeLoginLog("Utilizador '$username' alterou a palavra-passe.");
             $mensagem = "Palavra-passe alterada com sucesso!";
         } else {
+            writeLoginLog("O utilizador '$username' ocorreu um erro ao alterar a palavra-passe. Erro: " . $conn->error);
             $erro = "Erro ao alterar a palavra-passe!";
         }
     }

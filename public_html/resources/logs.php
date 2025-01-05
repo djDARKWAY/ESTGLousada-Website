@@ -1,5 +1,7 @@
 <?php
 
+date_default_timezone_set('Europe/Lisbon');
+
 function writeLoginLog($message, $level = 'INFO') {
     $logFile = __DIR__ . '../../../logs/loginsLogs.log';
     $currentDateTime = date('Y-m-d H:i:s');

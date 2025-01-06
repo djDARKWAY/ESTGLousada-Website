@@ -96,7 +96,6 @@ $conn->close();
                 <label for="estado">Estado:</label>
                 <select id="estado" name="estado" required>
                     <option value="Disponível">Disponível</option>
-                    <option value="Indisponível">Indisponível</option>
                     <option value="Brevemente">Brevemente</option>
                 </select>
                 <button type="submit" name="submit">Adicionar Sala</button>

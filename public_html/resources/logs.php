@@ -26,41 +26,30 @@ function writeUtilizadorLog($message, $level = 'INFO') {
     file_put_contents($utilizadorFile, $logMessage, FILE_APPEND | LOCK_EX);
 }
 
-function cleanOldLogs($logFile, $adminFile, $utilizadorFile, $days = 30) {
-    if (!file_exists($logFile)) {
-        return;
-    }
+function cleanOldLogs($logFile, $adminFile, $utilizadorFile, $daysToKeep) {
+    $thresholdDate = time() - ($daysToKeep * 24 * 60 * 60);
 
-    $lines = file($logFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-    $linesAdmin = file($adminFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-    $linesUtilizador = file($utilizadorFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-    $newLogs = [];
-    $threshold = strtotime("-$days days");
+    // Função auxiliar para processar e limpar logs antigos
+    function processLogFile($sourceFile, $thresholdDate) {
+        $logs = file($sourceFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        $remainingLogs = [];
 
-    foreach ($lines as $line) {
-        preg_match('/\[(.*?)\]/', $line, $matches);
-        if (!empty($matches[1]) && strtotime($matches[1]) > $threshold) {
-            $newLogs[] = $line;
+        foreach ($logs as $log) {
+            // Extraia a data do log
+            preg_match('/\[(.*?)\]/', $log, $matches);
+            $logDate = isset($matches[1]) ? strtotime($matches[1]) : false;
+
+            if ($logDate && $logDate >= $thresholdDate) {
+                $remainingLogs[] = $log;
+            }
         }
+
+        file_put_contents($sourceFile, implode("\n", $remainingLogs) . "\n");
     }
 
-    foreach ($linesAdmin as $line) {
-        preg_match('/\[(.*?)\]/', $line, $matches);
-        if (!empty($matches[1]) && strtotime($matches[1]) > $threshold) {
-            $newLogs[] = $line;
-        }
-    }
-
-    foreach ($linesUtilizador as $line) {
-        preg_match('/\[(.*?)\]/', $line, $matches);
-        if (!empty($matches[1]) && strtotime($matches[1]) > $threshold) {
-            $newLogs[] = $line;
-        }
-    }
-
-    file_put_contents($logFile, implode(PHP_EOL, $newLogs) . PHP_EOL);
-    file_put_contents($adminFile, implode(PHP_EOL, $newLogs) . PHP_EOL);
-    file_put_contents($utilizadorFile, implode(PHP_EOL, $newLogs) . PHP_EOL);
+    processLogFile($logFile, $thresholdDate);
+    processLogFile($adminFile, $thresholdDate);
+    processLogFile($utilizadorFile, $thresholdDate);
 }
 
 function shouldCleanLogs($markerFile) {

@@ -135,7 +135,7 @@ if (isset($_SESSION['mensagem_sucesso'])) {
                 <label for="nome">Nome:</label>
                 <input type="text" id="nome" name="nome" value="<?php echo htmlspecialchars($utilizador['nome']); ?>" required>
 
-                <label for="username">Utilizador:</label>
+                <label for="username">Username:</label>
                 <input type="text" id="username" name="username" value="<?php echo htmlspecialchars($utilizador['username']); ?>" required>
 
                 <label for="email">Email:</label>

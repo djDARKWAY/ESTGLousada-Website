@@ -1,5 +1,3 @@
-[2025-01-03 19:01:08] INFO: User 'roberto' logged in.
-[2025-01-04 00:30:20] INFO: Sala nomeada '' foi eliminada pelo administrador ''.
 [2025-01-04 00:35:55] INFO: Sala nomeada '' foi eliminada pelo administrador ''.
 [2025-01-04 00:37:55] INFO: Sala com ID 79 foi eliminada pelo administrador .
 [2025-01-04 00:40:45] INFO: Sala com ID 78 foi eliminada pelo administrador ''.
@@ -51,3 +49,4 @@
 [2025-01-05 00:06:11] INFO: Utilizador 'loosaz' tentou editar a reserva com o ID '76' que é passada ou cancelada.
 [2025-01-05 03:20:00] INFO: Utilizador 'loosaz' reservou a sala com ID '23' para o dia '2025-01-06' das 17:00 às 18:00.
 [2025-01-05 03:28:56] INFO: Utilizador 'loosaz' reservou a sala com ID '23' para o dia '2025-01-06' das 07:00 às 20:00.
+[2025-01-06 20:23:41] INFO: Utilizador 'miguel' reservou a sala com ID '24' para o dia '2025-01-07' das 12:00 às 13:00.
